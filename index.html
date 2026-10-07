@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Welcome - To-do</title>
+<style>
+:root{--bg:#f4f5f8;--card:#fff;--ink:#1b1d24;--mute:#6b7080;--line:#dfe2ea;--acc:#3b6df0;--ok:#2a9d5c;--bad:#d64545}
+@media (prefers-color-scheme:dark){:root{--bg:#14161c;--card:#1e212a;--ink:#eef0f6;--mute:#9aa0b2;--line:#2e3340;--acc:#6b93ff;--ok:#43c47a;--bad:#ff6b6b}}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,Segoe UI,sans-serif;display:flex;flex-direction:column;align-items:center;padding:48px 16px}
+main{width:100%;max-width:520px}
+h1{font-size:2rem;margin:0 0 6px;text-align:center}
+.sub{text-align:center;color:var(--mute);margin:0 0 28px}
+.users{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.user{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px 12px;cursor:pointer;color:var(--ink);font:inherit;text-align:center}
+.user:hover,.user:focus-visible{border-color:var(--acc);outline:none;box-shadow:0 0 0 3px color-mix(in srgb,var(--acc) 25%,transparent)}
+.av{width:64px;height:64px;border-radius:50%;background:var(--acc);color:#fff;font-size:1.5rem;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 12px}
+.user b{display:block;font-size:1.2rem}
+.user small{color:var(--mute)}
+details{margin-top:28px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 16px}
+summary{cursor:pointer;font-weight:600}
+label{display:block;margin:12px 0 4px;font-size:.85rem;color:var(--mute)}
+input{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit}
+button.pri{margin-top:14px;padding:10px 16px;border:0;border-radius:8px;background:var(--acc);color:#fff;font:inherit;font-weight:600;cursor:pointer}
+button.sec{padding:10px 16px;border:1px solid var(--line);border-radius:8px;background:transparent;color:var(--ink);font:inherit;cursor:pointer}
+.note{font-size:.82rem;color:var(--mute);margin:10px 0 0}
+#msg{margin-top:10px;font-size:.9rem;min-height:1.3em}
+.ok{color:var(--ok)}.bad{color:var(--bad)}
+dialog{border:1px solid var(--line);border-radius:16px;background:var(--card);color:var(--ink);padding:24px;width:min(340px,92vw)}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+dialog h2{margin:0 0 4px;font-size:1.2rem}
+dialog .row{display:flex;gap:10px;margin-top:16px;justify-content:flex-end}
+dialog input{text-align:center;letter-spacing:.4em;font-size:1.3rem}
+#pinErr{color:var(--bad);font-size:.9rem;min-height:1.2em;margin-top:8px}
+</style>
+</head>
+<body>
+<main>
+  <h1>Welcome</h1>
+  <p class="sub">Whose list would you like to open?</p>
+  <div class="users" id="users"></div>
+
+  <details id="setup">
+    <summary>Connect to GitHub (saves lists across devices)</summary>
+    <label for="repo">Repository (owner/name)</label>
+    <input id="repo" autocomplete="off" spellcheck="false">
+    <label for="branch">Branch</label>
+    <input id="branch" autocomplete="off" spellcheck="false">
+    <label for="token">Access token (stays on this device only)</label>
+    <input id="token" type="password" autocomplete="off" placeholder="github_pat_...">
+    <button class="pri" id="saveCfg" type="button">Save and test</button>
+    <div id="msg"></div>
+    <p class="note">Each list is saved as <code>data/oj.json</code> or <code>data/nick.json</code> in that repository. Use a fine-grained token limited to that one repository with Contents: read and write. If the repository is public, anyone can read those files, so a private repository is better for work tasks.</p>
+  </details>
+</main>
+
+<dialog id="pinDlg">
+  <h2 id="pinTitle"></h2>
+  <div class="note" id="pinHelp"></div>
+  <label for="pin1" id="pin1l">PIN</label>
+  <input id="pin1" type="password" inputmode="numeric" maxlength="4" autocomplete="off">
+  <div id="pin2wrap" hidden><label for="pin2">Confirm PIN</label><input id="pin2" type="password" inputmode="numeric" maxlength="4" autocomplete="off"></div>
+  <div id="pinErr"></div>
+  <div class="row"><button class="sec" id="pinCancel" type="button">Cancel</button><button class="pri" id="pinOk" type="button" style="margin:0">Continue</button></div>
+</dialog>
+
+<script src="gh-storage.js"></script>
+<script>
+(function () {
+  var USERS = [{ id: 'oj', name: 'OJ' }, { id: 'nick', name: 'Nick' }];
+  var SALT = 'todolist-v1';
+  var pins = {};
+  try { pins = JSON.parse(localStorage.getItem('todo_pins') || '{}'); } catch (e) {}
+  var $ = function (id) { return document.getElementById(id); };
+  var current = null, creating = false;
+
+  async function hash(u, pin) {
+    var b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(SALT + ':' + u + ':' + pin));
+    return Array.prototype.map.call(new Uint8Array(b), function (x) { return x.toString(16).padStart(2, '0'); }).join('');
+  }
+  function savePinsLocal() { try { localStorage.setItem('todo_pins', JSON.stringify(pins)); } catch (e) {} }
+  function msg(t, cls) { var m = $('msg'); m.textContent = t; m.className = cls || ''; }
+
+  function renderUsers() {
+    var box = $('users'); box.textContent = '';
+    USERS.forEach(function (u) {
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'user';
+      var av = document.createElement('div'); av.className = 'av'; av.textContent = u.name.charAt(0);
+      var n = document.createElement('b'); n.textContent = u.name;
+      var s = document.createElement('small'); s.textContent = pins[u.id] ? 'Enter PIN' : 'Set up PIN';
+      b.appendChild(av); b.appendChild(n); b.appendChild(s);
+      b.onclick = function () { openPin(u); };
+      box.appendChild(b);
+    });
+  }
+
+  async function loadRemotePins() {
+    try {
+      var f = await TodoGH.getFile('users.json');
+      if (f && f.data && f.data.pins) { Object.keys(f.data.pins).forEach(function (k) { pins[k] = f.data.pins[k]; }); savePinsLocal(); }
+    } catch (e) { /* no connection or no file yet: use this device's copy */ }
+    renderUsers();
+  }
+
+  async function publishPins() {
+    if (!TodoGH.cfg().token) return false;
+    try {
+      var f = await TodoGH.getFile('users.json');
+      var merged = Object.assign({}, f && f.data && f.data.pins || {}, pins);
+      await TodoGH.putFile('users.json', { pins: merged }, f ? f.sha : null);
+      return true;
+    } catch (e) { return false; }
+  }
+
+  function openPin(u) {
+    current = u; creating = !pins[u.id];
+    $('pinTitle').textContent = creating ? 'Create a PIN for ' + u.name : 'Hello ' + u.name;
+    $('pinHelp').textContent = creating ? 'Choose a 4-digit PIN. It is light protection only.' : 'Enter your 4-digit PIN.';
+    $('pin2wrap').hidden = !creating; $('pin1').value = ''; $('pin2').value = ''; $('pinErr').textContent = '';
+    $('pinDlg').showModal(); $('pin1').focus();
+  }
+
+  async function submitPin() {
+    var p = $('pin1').value;
+    if (!/^\d{4}$/.test(p)) { $('pinErr').textContent = 'The PIN must be exactly 4 digits.'; return; }
+    var h = await hash(current.id, p);
+    if (creating) {
+      if ($('pin2').value !== p) { $('pinErr').textContent = 'The two PINs do not match.'; return; }
+      pins[current.id] = h; savePinsLocal();
+      await publishPins();
+    } else if (pins[current.id] !== h) {
+      $('pinErr').textContent = 'Wrong PIN, try again.'; $('pin1').value = ''; return;
+    }
+    try { sessionStorage.setItem('todo_authed_' + current.id, '1'); } catch (e) {}
+    location.href = 'app.html?u=' + encodeURIComponent(current.id);
+  }
+
+  $('pinOk').onclick = submitPin;
+  $('pinCancel').onclick = function () { $('pinDlg').close(); };
+  ['pin1', 'pin2'].forEach(function (id) { $(id).addEventListener('keydown', function (e) { if (e.key === 'Enter') submitPin(); }); });
+
+  var c = TodoGH.cfg();
+  $('repo').value = c.repo; $('branch').value = c.branch; $('token').value = c.token;
+  if (!c.token) $('setup').open = true;
+  $('saveCfg').onclick = async function () {
+    var cfg = { repo: $('repo').value.trim(), branch: $('branch').value.trim() || 'main', dir: 'data', token: $('token').value.trim() };
+    try { localStorage.setItem('todo_gh_cfg', JSON.stringify(cfg)); } catch (e) {}
+    msg('Testing...');
+    try {
+      var r = await fetch('https://api.github.com/repos/' + cfg.repo, { headers: { 'Accept': 'application/vnd.github+json', 'Authorization': 'Bearer ' + cfg.token } });
+      if (!r.ok) throw new Error('GitHub answered ' + r.status + ' (check the token and repository name)');
+      var j = await r.json();
+      if (j.permissions && !j.permissions.push) throw new Error('This token can read but not write to the repository');
+      msg('Connected to ' + cfg.repo + (j.private ? ' (private)' : ' (public)') + '. Lists will now save to GitHub.', 'ok');
+      await publishPins(); loadRemotePins();
+    } catch (e) { msg(e.message, 'bad'); }
+  };
+
+  renderUsers(); loadRemotePins();
+})();
+</script>
+</body>
+</html>
