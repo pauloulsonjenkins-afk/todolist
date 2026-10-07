@@ -1,5 +1,3 @@
-a
-  b
 /* gh-storage.js - per-user storage for the to-do app.
    Saves to this device instantly and to a JSON file in a GitHub repo (data/<user>.json) when a token is set. */
 (function () {
