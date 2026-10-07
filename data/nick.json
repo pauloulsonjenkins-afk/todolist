@@ -3,5 +3,6 @@
  "work_categories": "[\"Airwave\",\"BAU\",\"BCP/DR\",\"CG\",\"CTM\",\"DDaT\",\"Errands\",\"FaHRM\",\"HMICFRS\",\"Personal\",\"Projects\",\"Steph\",\"Storm\",\"T. Meeting\",\"Work\"]",
  "work_assignees": "[\"B.S.Team\",\"Marie\",\"Nick\",\"Paul\",\"Steph\"]",
  "work_assignedByOptions": "[\"FaHRM\",\"Jon\",\"Jonny\"]",
- "work_localDataUpdatedAt": "1791383843728"
+ "work_localDataUpdatedAt": "1791383843728",
+ "work_theme": "terminal"
 }
