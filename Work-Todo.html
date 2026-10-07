@@ -1,0 +1,5178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>To-do - Work</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Special+Elite&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #DCE7EF;
+    --paper-dark: #C9D9E4;
+    --ink: #2B2A28;
+    --ink-muted: #6B6860;
+    --rule: #B6C7D2;
+    --stamp: #B33A3A;
+    --check: #3F6B4F;
+    --check-bg: #E1E9E3;
+    --accent-blue: #2F6FE4;
+    --outer-bg: #A9BAC6;
+    --due-highlight: #B9D3EC;
+    --priority-medium: #96631E;
+  }
+
+  body.theme-dark {
+    --paper: #1B2430;
+    --paper-dark: #131A24;
+    --ink: #E4ECF5;
+    --ink-muted: #93A2B4;
+    --rule: #2E3B4A;
+    --stamp: #E2685D;
+    --check: #6FBF8B;
+    --check-bg: #1E2E22;
+    --accent-blue: #5B9BF5;
+    --outer-bg: #0B0E12;
+    --due-highlight: #1E3A57;
+    --priority-medium: #D9A75A;
+  }
+
+  body.theme-colourful {
+    --paper: #FFF4E0;
+    --paper-dark: #FFE3B8;
+    --ink: #3A2E52;
+    --ink-muted: #8B7AA8;
+    --rule: #F0B8D9;
+    --stamp: #E63963;
+    --check: #14B8A6;
+    --check-bg: #CFF7F0;
+    --accent-blue: #6C5CE7;
+    --outer-bg: #FFC978;
+    --due-highlight: #FFEAA7;
+    --priority-medium: #F4A300;
+  }
+
+  body.theme-notebook {
+    --paper: #EDE3C8;
+    --paper-dark: #DDCFA8;
+    --ink: #3B2F22;
+    --ink-muted: #8A7A5C;
+    --rule: #C7B790;
+    --stamp: #8B3A2B;
+    --check: #4A6741;
+    --check-bg: #DDE3C4;
+    --accent-blue: #7A5230;
+    --outer-bg: #C9B896;
+    --due-highlight: #E8D9A0;
+    --priority-medium: #8B5E34;
+  }
+
+  body.theme-notebook header h1,
+  body.theme-notebook .version-label,
+  body.theme-notebook .due-today-top,
+  body.theme-notebook .footer-brand,
+  body.theme-notebook .app-label {
+    font-family: 'Special Elite', cursive;
+  }
+
+  body.theme-forest {
+    --paper: #E8F0E3;
+    --paper-dark: #D3E3C9;
+    --ink: #223324;
+    --ink-muted: #6B8268;
+    --rule: #B7CDAE;
+    --stamp: #C0392B;
+    --check: #2E7D5B;
+    --check-bg: #CFE8D9;
+    --accent-blue: #2F8F5B;
+    --outer-bg: #A9C4A0;
+    --due-highlight: #F5E1A4;
+    --priority-medium: #B8860B;
+  }
+
+  body.theme-ocean {
+    --paper: #E4F1F5;
+    --paper-dark: #C9E4EB;
+    --ink: #0B2E3A;
+    --ink-muted: #5A7C87;
+    --rule: #A9D2DE;
+    --stamp: #D64550;
+    --check: #1F9E89;
+    --check-bg: #CFF0E8;
+    --accent-blue: #0E7C9E;
+    --outer-bg: #6FA8B8;
+    --due-highlight: #FFE0B2;
+    --priority-medium: #C97B2E;
+  }
+
+  body.theme-sunset {
+    --paper: #FFEDE0;
+    --paper-dark: #FFD9BE;
+    --ink: #4A2545;
+    --ink-muted: #A5768F;
+    --rule: #F5B8A0;
+    --stamp: #E4572E;
+    --check: #2E9E8F;
+    --check-bg: #D4F0EC;
+    --accent-blue: #C9184A;
+    --outer-bg: #F4845F;
+    --due-highlight: #FFD6A5;
+    --priority-medium: #E8A33D;
+  }
+
+  body.theme-slate {
+    --paper: #F0F1F3;
+    --paper-dark: #DCDEE2;
+    --ink: #1E2228;
+    --ink-muted: #6B7280;
+    --rule: #C4C8CE;
+    --stamp: #B33A3A;
+    --check: #3F6B4F;
+    --check-bg: #DDE3DD;
+    --accent-blue: #4A5568;
+    --outer-bg: #A6ACB5;
+    --due-highlight: #E8E3D0;
+    --priority-medium: #8A6D3B;
+  }
+
+  body.theme-bw {
+    --paper: #FFFFFF;
+    --paper-dark: #EDEDED;
+    --ink: #000000;
+    --ink-muted: #666666;
+    --rule: #000000;
+    --stamp: #000000;
+    --check: #4D4D4D;
+    --check-bg: #E8E8E8;
+    --accent-blue: #000000;
+    --outer-bg: #BFBFBF;
+    --due-highlight: #D9D9D9;
+    --priority-medium: #808080;
+  }
+
+  body.theme-wb {
+    --paper: #000000;
+    --paper-dark: #1A1A1A;
+    --ink: #FFFFFF;
+    --ink-muted: #AAAAAA;
+    --rule: #FFFFFF;
+    --stamp: #FFFFFF;
+    --check: #CCCCCC;
+    --check-bg: #262626;
+    --accent-blue: #FFFFFF;
+    --outer-bg: #404040;
+    --due-highlight: #333333;
+    --priority-medium: #999999;
+  }
+
+  body.theme-terminal {
+    --paper: #000000;
+    --paper-dark: #061206;
+    --ink: #39FF14;
+    --ink-muted: #1F6B1F;
+    --rule: #2ECC40;
+    --stamp: #00FF00;
+    --check: #2ECC40;
+    --check-bg: #0D260D;
+    --accent-blue: #39FF14;
+    --outer-bg: #000000;
+    --due-highlight: #123312;
+    --priority-medium: #17A317;
+  }
+
+  body.theme-terminal .title-logo,
+  body.theme-terminal .footer-brand-logo {
+    display: none;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--outer-bg);
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 48px 16px;
+    font-family: 'Nunito', sans-serif;
+    color: var(--ink);
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+
+  .pad {
+    width: 100%;
+    max-width: min(1100px, 92vw);
+    background: var(--paper);
+    box-shadow: 0 1px 0 var(--paper-dark), 0 12px 24px -8px rgba(0,0,0,0.25);
+    position: relative;
+    transition: background 0.2s ease;
+  }
+
+  .perf {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 14px;
+    height: 14px;
+    background:
+      radial-gradient(circle at 10px 0px, transparent 6px, var(--paper) 6.5px) top / 28px 14px repeat-x;
+    background-color: var(--outer-bg);
+  }
+
+  .sheet {
+    padding: 26px 28px 24px;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 22px;
+    border-bottom: 2px solid var(--accent-blue);
+    padding-bottom: 14px;
+    position: relative;
+  }
+
+  .settings-btn {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: none;
+    border: 1px solid var(--ink-muted);
+    color: var(--ink-muted);
+    width: 28px;
+    height: 28px;
+    border-radius: 3px;
+    font-size: 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+  }
+
+  .settings-btn:hover {
+    color: var(--ink);
+    border-color: var(--ink);
+  }
+
+  .lock-btn {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background: none;
+    border: 1px solid var(--ink-muted);
+    color: var(--ink-muted);
+    width: 28px;
+    height: 28px;
+    border-radius: 3px;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+  }
+
+  .lock-btn:hover {
+    color: var(--ink);
+    border-color: var(--ink);
+  }
+
+  header h1 {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 32px;
+    letter-spacing: 2px;
+    margin: 0 0 4px;
+    text-transform: uppercase;
+  }
+
+  .title-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .title-logo {
+    width: 30px;
+    height: 41px;
+    flex: none;
+  }
+
+  .footer-brand {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--ink-muted);
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    opacity: 0.7;
+  }
+
+  .footer-brand-logo {
+    width: 16px;
+    height: 16px;
+    flex: none;
+  }
+
+  .footer-status {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 9px;
+    letter-spacing: 0.5px;
+    text-transform: none;
+    font-weight: 600;
+    color: var(--ink-muted);
+    text-align: left;
+  }
+
+  .footer-mark {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: none;
+  }
+
+  .app-label {
+    display: inline-block;
+    vertical-align: middle;
+  }
+
+  .app-label:not(:empty) {
+    background: var(--accent-blue);
+    color: var(--paper);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 10px;
+  }
+
+  .footer-brand .app-label:not(:empty) {
+    font-size: 8px;
+    padding: 2px 6px;
+  }
+
+  header p {
+    margin: 0;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--ink-muted);
+    text-transform: uppercase;
+  }
+
+  .version-label {
+    margin-top: 4px !important;
+    font-size: 9px !important;
+    letter-spacing: 1px !important;
+    opacity: 0.6;
+  }
+
+  .due-today-top {
+    text-align: center;
+    margin: 0 0 18px !important;
+    font-size: 18px !important;
+    letter-spacing: 1px !important;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+
+  .filter-trigger.flash {
+    animation: flash-red 1s ease-in-out infinite;
+  }
+
+  .due-today-top #dueTodayTopCount,
+  .due-today-top #pendingTopCount,
+  .due-today-top #overdueTopCount {
+    font-weight: 700;
+    font-size: 22px;
+  }
+
+  .tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 18px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .tabs .tab {
+    flex: 1;
+    background: none;
+    border: none;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    padding: 8px 4px 10px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+  }
+
+  .tabs .tab.active {
+    color: var(--ink);
+    border-bottom: 2px solid var(--accent-blue);
+  }
+
+  .add-row {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .add-row .add-btn-row {
+    display: flex;
+    gap: 8px;
+  }
+
+  .add-row input[type="date"] {
+    width: 100%;
+    box-sizing: border-box;
+    background: transparent;
+    border: none;
+    border-bottom: 1px dashed var(--ink-muted);
+    font-family: 'Nunito', sans-serif;
+    font-size: 12px;
+    color: var(--ink);
+    padding: 6px 2px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  .add-row input[type="date"]:focus {
+    border-bottom: 1px solid var(--accent-blue);
+  }
+
+  .add-row input[type="text"] {
+    width: 100%;
+    box-sizing: border-box;
+    background: transparent;
+    border: none;
+    border-bottom: 1px dashed var(--ink-muted);
+    padding: 6px 2px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 14px;
+    color: var(--ink);
+    outline: none;
+  }
+
+  .add-row input[type="text"]::placeholder {
+    color: var(--ink-muted);
+    opacity: 0.7;
+  }
+
+  .add-row input[type="text"]:focus {
+    border-bottom: 1px solid var(--accent-blue);
+  }
+
+  .add-row select {
+    width: 100%;
+    box-sizing: border-box;
+    background: transparent;
+    border: none;
+    border-bottom: 1px dashed var(--ink-muted);
+    font-family: 'Nunito', sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    color: var(--ink);
+    padding: 6px 2px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  .add-row select:focus {
+    border-bottom: 1px solid var(--accent-blue);
+  }
+
+  .add-row button {
+    flex: 1;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 10px 16px;
+    cursor: pointer;
+  }
+
+  .add-row button:active { transform: translateY(1px); }
+
+  .add-row #cancelAddBtn {
+    background: none;
+    color: var(--ink-muted);
+    border: 1px solid var(--ink-muted);
+  }
+
+  .add-row #cancelAddBtn:hover {
+    color: var(--stamp);
+    border-color: var(--stamp);
+  }
+
+  .sort-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .sort-label {
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    font-weight: 700;
+  }
+
+  .sort-row select {
+    background: transparent;
+    border: none;
+    border-bottom: 1px dashed var(--ink-muted);
+    font-family: 'Nunito', sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    color: var(--ink);
+    padding: 4px 2px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  .sort-row select:focus {
+    border-bottom: 1px solid var(--accent-blue);
+  }
+
+  .new-task-btn {
+    display: block;
+    width: 100%;
+    background: none;
+    border: 1.5px dashed var(--ink-muted);
+    color: var(--ink-muted);
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 10px;
+    margin-bottom: 20px;
+    cursor: pointer;
+  }
+
+  .new-task-btn:hover {
+    color: var(--ink);
+    border-color: var(--ink);
+    border-style: solid;
+  }
+
+  .filter-trigger {
+    cursor: pointer;
+    border-radius: 3px;
+    padding: 2px 4px;
+  }
+
+  .filter-trigger:hover {
+    text-decoration: underline;
+  }
+
+  .filter-trigger.filter-active,
+  #dueTodayStat.filter-active,
+  #overdueStat.filter-active {
+    background: var(--accent-blue);
+    color: var(--paper) !important;
+    text-decoration: none;
+  }
+
+  .filter-trigger.filter-active #dueTodayTopCount,
+  .filter-trigger.filter-active #overdueTopCount,
+  #dueTodayStat.filter-active #dueTodayCount,
+  #overdueStat.filter-active #overdueCount {
+    color: var(--paper) !important;
+  }
+
+  #dueTodayStat,
+  #pendingStat,
+  #overdueStat {
+    cursor: pointer;
+    border-radius: 3px;
+    padding: 4px 8px;
+  }
+
+  #dueTodayStat:hover,
+  #pendingStat:hover,
+  #overdueStat:hover {
+    text-decoration: underline;
+  }
+
+  .filter-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    background: var(--paper-dark);
+    border: 1px solid var(--accent-blue);
+    padding: 8px 12px;
+    margin-bottom: 14px;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+  }
+
+  .filter-indicator #filterIndicatorText {
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  .filter-indicator button {
+    flex: none;
+    background: none;
+    border: 1px solid var(--ink-muted);
+    color: var(--ink-muted);
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    cursor: pointer;
+    border-radius: 2px;
+  }
+
+  .filter-indicator button:hover {
+    color: var(--ink);
+    border-color: var(--ink);
+  }
+
+  .new-task-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    z-index: 150;
+    margin-bottom: 20px;
+  }
+
+  .new-task-overlay.open {
+    display: flex;
+  }
+
+  .new-task-window {
+    width: 100%;
+    max-width: 560px;
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    box-shadow: 0 20px 50px -10px rgba(0,0,0,0.5);
+  }
+
+  .new-task-titlebar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--ink);
+    color: var(--paper);
+    padding: 10px 14px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 13px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .new-task-window-close {
+    background: none;
+    border: none;
+    color: var(--paper);
+    font-size: 14px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 2px 4px;
+    opacity: 0.8;
+  }
+
+  .new-task-window-close:hover {
+    opacity: 1;
+  }
+
+  .new-task-window .add-row {
+    padding: 26px;
+  }
+
+  ul.list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .group-divider {
+    margin-top: 18px;
+    padding-top: 10px;
+    padding-bottom: 4px;
+    border-top: 2px solid var(--accent-blue);
+  }
+
+  .group-divider.first {
+    margin-top: 0;
+  }
+
+  .group-divider span {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--ink-muted);
+  }
+
+  .list-header {
+    display: grid;
+    grid-template-columns: 18px 1fr 105px 150px 95px 68px;
+    align-items: center;
+    column-gap: 6px;
+    padding: 0 0 6px;
+    border-bottom: 2px solid var(--accent-blue);
+    margin-bottom: 2px;
+  }
+
+  .list-header.grid-done {
+    grid-template-columns: 18px 1fr 105px 150px 95px 75px 68px;
+  }
+
+  .list-header .lh-spacer {
+    width: 18px;
+  }
+
+  .list-header span {
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .list-header .lh-task {
+    letter-spacing: 2px;
+  }
+
+  li.item {
+    display: flex;
+    flex-direction: column;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--rule);
+    position: relative;
+  }
+
+  li.item.due-today {
+    background: var(--due-highlight);
+  }
+
+  li.item.overdue-row {
+    background: var(--due-highlight);
+  }
+
+  li.item .row {
+    display: grid;
+    grid-template-columns: 18px 1fr 105px 150px 95px 68px;
+    align-items: center;
+    column-gap: 6px;
+  }
+
+  li.item .row.grid-done {
+    grid-template-columns: 18px 1fr 105px 150px 95px 75px 68px;
+  }
+
+  .notes-panel {
+    margin: 8px 0 4px 28px;
+  }
+
+  .edit-fields {
+    margin-bottom: 10px;
+  }
+
+  .edit-name {
+    width: 100%;
+    box-sizing: border-box;
+    background: var(--paper-dark);
+    border: 1px dashed var(--ink-muted);
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--ink);
+    padding: 6px 8px;
+    outline: none;
+    margin-bottom: 8px;
+  }
+
+  .edit-name:focus {
+    border-color: var(--accent-blue);
+  }
+
+  .edit-meta-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .edit-due,
+  .edit-priority,
+  .edit-category {
+    background: var(--paper-dark);
+    border: 1px dashed var(--ink-muted);
+    font-family: 'Nunito', sans-serif;
+    font-size: 12px;
+    color: var(--ink);
+    padding: 5px 6px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  .edit-due:focus,
+  .edit-priority:focus,
+  .edit-category:focus {
+    border-color: var(--accent-blue);
+  }
+
+  .assignee-field {
+    margin-top: 10px;
+    margin-bottom: 14px;
+  }
+
+  .assignee-field-label {
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--ink-muted);
+    margin-bottom: 6px;
+  }
+
+  .assignee-checklist {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    background: var(--paper-dark);
+    border: 1px dashed var(--ink-muted);
+    padding: 8px;
+  }
+
+  .assignee-checklist-empty {
+    font-size: 11px;
+    color: var(--ink-muted);
+    font-style: italic;
+  }
+
+  .assignee-checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    color: var(--ink);
+    cursor: pointer;
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    padding: 4px 8px;
+    border-radius: 12px;
+  }
+
+  .assignee-checkbox-row input {
+    cursor: pointer;
+  }
+
+  .subtask-list-title {
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--ink-muted);
+    margin-bottom: 6px;
+  }
+
+  .subtask-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  .subtask-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 8px;
+    background: var(--paper-dark);
+    border: 1px dashed var(--rule);
+  }
+
+  .subtask-box {
+    flex: none;
+    width: 16px;
+    height: 16px;
+    border: 1.5px solid var(--ink);
+    background: var(--paper);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .subtask-item.done .subtask-box {
+    background: var(--check-bg);
+    border-color: var(--accent-blue);
+  }
+
+  .subtask-box svg {
+    width: 10px;
+    height: 10px;
+    stroke: var(--check);
+    stroke-width: 3;
+    fill: none;
+    display: none;
+  }
+
+  .subtask-note-icon {
+    flex: none;
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--ink-muted);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    padding: 2px 4px;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  .subtask-item.note-entry .subtask-text {
+    font-style: italic;
+  }
+
+  .subtask-item.done .subtask-box svg {
+    display: block;
+  }
+
+  .subtask-text {
+    flex: 1;
+    min-width: 0;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--ink);
+    word-break: break-word;
+    cursor: text;
+  }
+
+  .subtask-item.done .subtask-text {
+    color: var(--ink-muted);
+    text-decoration: line-through;
+  }
+
+  .subtask-date {
+    flex: none;
+    width: 34px;
+    font-size: 9px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    white-space: nowrap;
+  }
+
+  .subtask-edit-input {
+    flex: 1;
+    min-width: 0;
+    resize: vertical;
+    min-height: 70px;
+    background: var(--paper);
+    border: 1px dashed var(--check);
+    font-family: 'Nunito', sans-serif;
+    font-size: 12px;
+    color: var(--ink);
+    padding: 3px 4px;
+    outline: none;
+    box-sizing: border-box;
+  }
+
+  .subtask-type-toggle {
+    flex: none;
+    background: none;
+    border: 1px solid var(--rule);
+    color: var(--ink-muted);
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 9px;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    padding: 3px 7px;
+    border-radius: 10px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .subtask-type-toggle:hover {
+    color: var(--ink);
+    border-color: var(--ink);
+  }
+
+  .subtask-delete {
+    flex: none;
+    background: none;
+    border: none;
+    color: var(--ink-muted);
+    font-size: 13px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 2px 4px;
+  }
+
+  .subtask-delete:hover {
+    color: var(--stamp);
+  }
+
+  .subtask-delete.confirming {
+    flex: none;
+    background: var(--stamp);
+    color: var(--paper);
+    font-family: 'Nunito', sans-serif;
+    font-size: 9px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    padding: 3px 7px;
+    border-radius: 2px;
+  }
+
+  .subtask-cancel-delete {
+    flex: none;
+    background: none;
+    border: 1px solid var(--ink-muted);
+    color: var(--ink-muted);
+    font-family: 'Nunito', sans-serif;
+    font-size: 9px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    padding: 3px 7px;
+    cursor: pointer;
+    border-radius: 2px;
+  }
+
+  .subtask-cancel-delete:hover {
+    color: var(--ink);
+    border-color: var(--ink);
+  }
+
+  .subtask-empty {
+    font-size: 12px;
+    color: var(--ink-muted);
+    font-style: italic;
+    padding: 4px 0;
+  }
+
+  .add-subtask-row {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .entry-type-row {
+    display: flex;
+    gap: 6px;
+  }
+
+  .entry-type-btn {
+    background: var(--paper-dark);
+    border: 1px solid var(--rule);
+    color: var(--ink-muted);
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    padding: 5px 12px;
+    border-radius: 12px;
+    cursor: pointer;
+  }
+
+  .entry-type-btn.selected {
+    background: var(--accent-blue);
+    border-color: var(--accent-blue);
+    color: var(--paper);
+  }
+
+  .add-subtask-input {
+    flex: 1;
+    min-width: 0;
+    resize: vertical;
+    min-height: 100px;
+    background: var(--paper-dark);
+    border: 1px dashed var(--ink-muted);
+    font-family: 'Nunito', sans-serif;
+    font-size: 12px;
+    color: var(--ink);
+    padding: 8px;
+    outline: none;
+    box-sizing: border-box;
+  }
+
+  .add-subtask-input:focus {
+    border-color: var(--accent-blue);
+  }
+
+  .add-subtask-btn {
+    flex: none;
+    background: var(--check);
+    color: var(--paper);
+    border: none;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 0 16px;
+    cursor: pointer;
+  }
+
+  .add-subtask-btn:hover {
+    background: var(--paper);
+    color: var(--check);
+    box-shadow: inset 0 0 0 1px var(--check);
+  }
+
+  li.item .box {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    border: 1.5px solid var(--ink);
+    background: var(--paper);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  li.item.done .box {
+    background: var(--check-bg);
+    border-color: var(--accent-blue);
+  }
+
+  li.item .box svg {
+    width: 12px;
+    height: 12px;
+    stroke: var(--check);
+    stroke-width: 3;
+    fill: none;
+    display: none;
+  }
+
+  li.item.done .box svg { display: block; }
+
+  li.item .task-text {
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 14px;
+    line-height: 1.5;
+    cursor: pointer;
+  }
+
+  li.item .task-text.high-priority {
+    color: var(--stamp);
+  }
+
+  li.item.done .task-text.high-priority {
+    color: var(--ink-muted);
+  }
+
+  li.item .created {
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    white-space: nowrap;
+  }
+
+  li.item .created.overdue {
+    color: var(--stamp);
+    font-weight: 700;
+  }
+
+  li.item .cell {
+    min-width: 0;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  li.item .cell-category .category-tag,
+  li.item .cell-due,
+  li.item .priority-tag {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    display: inline-block;
+  }
+
+  .priority-tag {
+    font-size: 9px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 2px;
+    display: inline-block;
+  }
+
+  .priority-tag.high {
+    color: var(--stamp);
+    border: 1px solid var(--stamp);
+  }
+
+  .priority-tag.medium {
+    color: var(--priority-medium);
+    border: 1px solid var(--priority-medium);
+  }
+
+  .priority-tag.low {
+    color: var(--check);
+    border: 1px solid var(--check);
+  }
+
+  li.item.done .task-text {
+    color: var(--ink-muted);
+  }
+
+  li.item .stamp {
+    position: absolute;
+    right: 26px;
+    top: 4px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 12px;
+    color: var(--stamp);
+    border: 2px solid var(--stamp);
+    padding: 1px 6px;
+    border-radius: 3px;
+    transform: rotate(-10deg);
+    opacity: 0;
+    pointer-events: none;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  li.item.done .stamp {
+    opacity: 0.85;
+  }
+
+  .notes-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 6px;
+  }
+
+  .notes-footer .remove {
+    flex: none;
+    background: none;
+    border: 1px solid var(--stamp);
+    color: var(--stamp);
+    font-family: 'Nunito', sans-serif;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    line-height: 1;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 2px;
+  }
+
+  .notes-footer .remove:hover {
+    background: var(--stamp);
+    color: var(--paper);
+  }
+
+  .notes-footer .remove.confirming {
+    background: var(--stamp);
+    color: var(--paper);
+    font-weight: 700;
+  }
+
+  .notes-footer .cancel-task-delete {
+    flex: none;
+    background: none;
+    border: 1px solid var(--ink-muted);
+    color: var(--ink-muted);
+    font-family: 'Nunito', sans-serif;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    line-height: 1;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 2px;
+  }
+
+  .notes-footer .cancel-task-delete:hover {
+    color: var(--ink);
+    border-color: var(--ink);
+  }
+
+  .notes-footer .save-task {
+    flex: none;
+    background: var(--check);
+    border: 1px solid var(--check);
+    color: var(--paper);
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    line-height: 1;
+    cursor: pointer;
+    padding: 4px 10px;
+    border-radius: 2px;
+  }
+
+  .close-task {
+    display: block;
+    width: 100%;
+    margin-top: 10px;
+    background: none;
+    border: 1px solid var(--rule);
+    color: var(--ink-muted);
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    line-height: 1;
+    cursor: pointer;
+    padding: 8px 10px;
+    border-radius: 2px;
+  }
+
+  .close-task:hover {
+    color: var(--ink);
+    border-color: var(--ink);
+  }
+
+  .notes-footer .save-task:hover {
+    background: var(--paper);
+    color: var(--check);
+  }
+
+  .notes-footer .pending-toggle {
+    flex: none;
+    background: none;
+    border: 1px solid var(--priority-medium);
+    color: var(--priority-medium);
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    line-height: 1;
+    cursor: pointer;
+    padding: 4px 10px;
+    border-radius: 2px;
+  }
+
+  .notes-footer .pending-toggle:hover {
+    background: var(--priority-medium);
+    color: var(--paper);
+  }
+
+  .notes-footer .mark-complete-btn {
+    flex: none;
+    background: none;
+    border: 1px solid var(--check);
+    color: var(--check);
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    line-height: 1;
+    cursor: pointer;
+    padding: 4px 10px;
+    border-radius: 2px;
+  }
+
+  .notes-footer .mark-complete-btn:hover {
+    background: var(--check);
+    color: var(--paper);
+  }
+
+  .notes-footer .created-label {
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    white-space: nowrap;
+  }
+
+
+  .empty {
+    text-align: center;
+    padding: 30px 10px;
+    color: var(--ink-muted);
+    font-size: 13px;
+    font-style: italic;
+  }
+
+  footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 18px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--ink-muted);
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: var(--ink-muted);
+    text-transform: uppercase;
+  }
+
+  footer button {
+    background: none;
+    border: none;
+    color: var(--ink-muted);
+    font-family: 'Nunito', sans-serif;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-decoration: underline;
+    cursor: pointer;
+    text-transform: uppercase;
+    padding: 0;
+  }
+
+  footer button:hover { color: var(--stamp); }
+
+  .footer-actions {
+    display: flex;
+    gap: 16px;
+  }
+
+  .summary {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--ink-muted);
+  }
+
+  .summary-title {
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin-bottom: 8px;
+  }
+
+  .summary-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-bottom: 6px;
+  }
+
+  .summary-row:last-child {
+    margin-bottom: 0;
+  }
+
+  .due-today-row {
+    justify-content: center;
+    gap: 56px;
+    margin-top: 32px;
+  }
+
+  .summary-stat {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 15px;
+    letter-spacing: 0.5px;
+    color: var(--ink);
+  }
+
+  .summary-stat .priority-tag {
+    font-size: 12px;
+    padding: 2px 8px;
+  }
+
+  #dueTodayStat {
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 22px;
+    color: var(--ink-muted);
+  }
+
+  #dueTodayCount {
+    color: var(--ink);
+    font-weight: 700;
+    font-size: 28px;
+  }
+
+  #dueTodayStat.flash {
+    animation: flash-red 1s ease-in-out infinite;
+  }
+
+  #overdueStat {
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 22px;
+    color: var(--ink-muted);
+  }
+
+  #overdueCount {
+    color: var(--ink);
+    font-weight: 700;
+    font-size: 28px;
+  }
+
+  #overdueStat.flash {
+    animation: flash-red 1s ease-in-out infinite;
+  }
+
+  #pendingStat {
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 22px;
+    color: var(--ink-muted);
+  }
+
+  #pendingSummaryCount {
+    color: var(--ink);
+    font-weight: 700;
+    font-size: 28px;
+  }
+
+  @keyframes flash-red {
+    0%, 100% {
+      color: var(--ink-muted);
+    }
+    50% {
+      color: var(--stamp);
+    }
+  }
+
+  #dueTodayStat.flash #dueTodayCount {
+    animation: flash-red 1s ease-in-out infinite;
+  }
+
+  #overdueStat.flash #overdueCount {
+    animation: flash-red 1s ease-in-out infinite;
+  }
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    z-index: 100;
+  }
+
+  .modal-overlay.open {
+    display: flex;
+  }
+
+  .modal {
+    background: var(--paper);
+    width: 100%;
+    max-width: 380px;
+    max-height: 80vh;
+    overflow-y: auto;
+    padding: 20px;
+    box-shadow: 0 16px 40px -10px rgba(0,0,0,0.4);
+  }
+
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid var(--accent-blue);
+    padding-bottom: 10px;
+    margin-bottom: 14px;
+  }
+
+  .modal-header h2 {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 16px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin: 0;
+  }
+
+  .modal-close {
+    background: none;
+    border: none;
+    font-size: 16px;
+    color: var(--ink-muted);
+    cursor: pointer;
+    line-height: 1;
+    padding: 2px 4px;
+  }
+
+  .modal-close:hover {
+    color: var(--stamp);
+  }
+
+  .category-list {
+    list-style: none;
+    margin: 0 0 16px;
+    padding: 0;
+  }
+
+  .category-list li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .category-list input[type="text"] {
+    flex: 1;
+    min-width: 0;
+    background: transparent;
+    border: none;
+    border-bottom: 1px dashed var(--ink-muted);
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px;
+    color: var(--ink);
+    padding: 4px 2px;
+    outline: none;
+  }
+
+  .category-list input[type="text"]:focus {
+    border-bottom: 1px solid var(--accent-blue);
+  }
+
+  .category-list .delete-category {
+    flex: none;
+    background: none;
+    border: 1px solid var(--stamp);
+    color: var(--stamp);
+    font-family: 'Nunito', sans-serif;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    padding: 3px 8px;
+    border-radius: 2px;
+  }
+
+  .category-list .delete-category:hover {
+    background: var(--stamp);
+    color: var(--paper);
+  }
+
+  .category-empty {
+    font-size: 12px;
+    color: var(--ink-muted);
+    font-style: italic;
+    padding: 8px 0;
+  }
+
+  .add-category-row {
+    display: flex;
+    gap: 8px;
+  }
+
+  .add-category-row input[type="text"] {
+    flex: 1;
+    background: transparent;
+    border: none;
+    border-bottom: 1px dashed var(--ink-muted);
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px;
+    color: var(--ink);
+    padding: 6px 2px;
+    outline: none;
+  }
+
+  .add-category-row input[type="text"]:focus {
+    border-bottom: 1px solid var(--accent-blue);
+  }
+
+  .add-category-row button {
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 0 16px;
+    cursor: pointer;
+  }
+
+  .accordion-section {
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .accordion-section:first-child {
+    border-top: 1px solid var(--rule);
+  }
+
+  .accordion-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: none;
+    border: none;
+    padding: 12px 2px;
+    cursor: pointer;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 13px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+
+  .accordion-header:hover {
+    color: var(--check);
+  }
+
+  .accordion-arrow {
+    font-size: 11px;
+    color: var(--ink-muted);
+    transition: transform 0.15s ease;
+  }
+
+  .accordion-section.open .accordion-arrow {
+    transform: rotate(90deg);
+  }
+
+  .accordion-content {
+    display: none;
+    padding: 2px 2px 18px;
+  }
+
+  .accordion-section.open .accordion-content {
+    display: block;
+  }
+
+  .theme-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .theme-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--paper-dark);
+    border: 2px solid var(--rule);
+    border-radius: 6px;
+    padding: 10px 12px;
+    cursor: pointer;
+    font-family: 'Nunito', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--ink);
+  }
+
+  .theme-option.selected {
+    border-color: var(--accent-blue);
+  }
+
+  .theme-swatch {
+    flex: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 1px solid rgba(0,0,0,0.15);
+  }
+
+  .theme-swatch-light {
+    background: linear-gradient(135deg, #DCE7EF 50%, #2F6FE4 50%);
+  }
+
+  .theme-swatch-dark {
+    background: linear-gradient(135deg, #1B2430 50%, #5B9BF5 50%);
+  }
+
+  .theme-swatch-colourful {
+    background: linear-gradient(135deg, #FFF4E0 50%, #E63963 50%);
+  }
+
+  .theme-swatch-notebook {
+    background: linear-gradient(135deg, #EDE3C8 50%, #8B3A2B 50%);
+  }
+
+  .theme-swatch-forest {
+    background: linear-gradient(135deg, #E8F0E3 50%, #2F8F5B 50%);
+  }
+
+  .theme-swatch-ocean {
+    background: linear-gradient(135deg, #E4F1F5 50%, #0E7C9E 50%);
+  }
+
+  .theme-swatch-sunset {
+    background: linear-gradient(135deg, #FFEDE0 50%, #E4572E 50%);
+  }
+
+  .theme-swatch-slate {
+    background: linear-gradient(135deg, #F0F1F3 50%, #4A5568 50%);
+  }
+
+  .theme-swatch-bw {
+    background: linear-gradient(135deg, #FFFFFF 50%, #000000 50%);
+  }
+
+  .theme-swatch-wb {
+    background: linear-gradient(135deg, #000000 50%, #FFFFFF 50%);
+  }
+
+  .theme-swatch-terminal {
+    background: linear-gradient(135deg, #000000 50%, #39FF14 50%);
+  }
+
+  .changelog-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-height: 260px;
+    overflow-y: auto;
+  }
+
+  .changelog-list li {
+    font-size: 11px;
+    line-height: 1.6;
+    color: var(--ink-muted);
+    padding: 6px 0;
+    border-bottom: 1px dashed var(--rule);
+  }
+
+  .changelog-list li:last-child {
+    border-bottom: none;
+  }
+
+  .changelog-version {
+    display: inline-block;
+    font-weight: 700;
+    color: var(--ink);
+    margin-right: 6px;
+  }
+
+  .settings-hint {
+    font-size: 11px;
+    line-height: 1.5;
+    color: var(--ink-muted);
+    margin: 0 0 12px;
+  }
+
+  .settings-hint-small {
+    font-size: 10px;
+    font-style: italic;
+    margin-top: -6px;
+  }
+
+  .reminder-radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 10px 0;
+  }
+
+  .reminder-radio-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--ink);
+    cursor: pointer;
+  }
+
+  .reminder-radio-option input {
+    cursor: pointer;
+  }
+
+  .export-all-btn {
+    display: block;
+    width: 100%;
+    background: var(--check);
+    color: var(--paper);
+    border: none;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 10px;
+    cursor: pointer;
+  }
+
+  .export-all-btn:hover {
+    background: var(--paper);
+    color: var(--check);
+    box-shadow: inset 0 0 0 1px var(--check);
+  }
+
+  .report-btn {
+    margin-top: 8px;
+    background: var(--ink);
+  }
+
+  .report-btn:hover {
+    color: var(--ink);
+  }
+
+  .import-file-input {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    background: var(--paper-dark);
+    border: 1px dashed var(--ink-muted);
+    font-family: 'Nunito', sans-serif;
+    font-size: 11px;
+    color: var(--ink);
+    padding: 8px;
+    margin-bottom: 10px;
+  }
+
+  .import-status {
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    color: var(--ink-muted);
+    margin-top: 8px;
+    min-height: 14px;
+  }
+
+  .import-status.success {
+    color: var(--check);
+    font-weight: 700;
+  }
+
+  .import-status.error {
+    color: var(--stamp);
+    font-weight: 700;
+  }
+
+  .auto-sync-toggle {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 11px;
+    line-height: 1.5;
+    color: var(--ink-muted);
+    margin-top: 12px;
+    cursor: pointer;
+  }
+
+  .auto-sync-toggle input {
+    margin-top: 2px;
+    flex: none;
+    cursor: pointer;
+  }
+
+  .password-input {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    background: var(--paper-dark);
+    border: 1px dashed var(--ink-muted);
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px;
+    color: var(--ink);
+    padding: 8px;
+    outline: none;
+    margin-bottom: 10px;
+  }
+
+  .password-input:focus {
+    border-color: var(--accent-blue);
+  }
+
+  .password-status {
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    color: var(--ink-muted);
+    margin-bottom: 10px;
+  }
+
+  .password-status.enabled {
+    color: var(--check);
+    font-weight: 700;
+  }
+
+  .remove-password-btn {
+    background: var(--stamp);
+    margin-top: 8px;
+  }
+
+  .remove-password-btn:hover {
+    color: var(--stamp);
+    box-shadow: inset 0 0 0 1px var(--stamp);
+  }
+
+  .close-settings-bottom-btn {
+    display: block;
+    width: 100%;
+    background: none;
+    color: var(--ink-muted);
+    border: 1px solid var(--ink-muted);
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 10px;
+    margin-top: 22px;
+    cursor: pointer;
+  }
+
+  .close-settings-bottom-btn:hover {
+    color: var(--ink);
+    border-color: var(--ink);
+  }
+
+  .lock-overlay {
+    z-index: 200;
+    background: var(--paper-dark);
+  }
+
+  .lock-overlay.open {
+    display: flex;
+  }
+
+  .lock-box {
+    text-align: left;
+  }
+
+  .unlock-error {
+    font-size: 11px;
+    color: var(--stamp);
+    letter-spacing: 0.5px;
+    margin-top: 8px;
+    min-height: 14px;
+  }
+
+  .due-summary-modal {
+    max-width: 640px;
+    max-height: 85vh;
+    overflow-y: auto;
+  }
+
+  .due-summary-section {
+    margin-bottom: 18px;
+  }
+
+  .due-summary-title {
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--ink-muted);
+    padding-bottom: 6px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .due-summary-section.overdue .due-summary-title {
+    color: var(--stamp);
+  }
+
+  .due-summary-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .due-summary-list li {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 5px 0;
+    font-size: 13px;
+  }
+
+  .due-summary-task {
+    flex: 1;
+    min-width: 0;
+    word-break: break-word;
+  }
+
+  .due-summary-date {
+    flex: none;
+    font-size: 10px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    padding-top: 2px;
+  }
+
+  .due-summary-empty {
+    font-size: 13px;
+    color: var(--ink-muted);
+    font-style: italic;
+    text-align: center;
+    padding: 10px 0 20px;
+  }
+
+  .category-tag {
+    font-size: 9px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 2px;
+    display: inline-block;
+    color: var(--ink-muted);
+    border: 1px solid var(--rule);
+    background: var(--paper-dark);
+  }
+
+  select option {
+    background: var(--paper);
+    color: var(--ink);
+  }
+
+  body.theme-dark input[type="date"]::-webkit-calendar-picker-indicator,
+  body.theme-wb input[type="date"]::-webkit-calendar-picker-indicator,
+  body.theme-terminal input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+  }
+</style>
+</head>
+<body>
+
+<div class="pad">
+  <div class="perf"></div>
+  <div class="sheet">
+    <header>
+      <button id="lockBtn" class="lock-btn" aria-label="Lock" type="button" style="display:none;">&#128274;</button>
+      <button id="settingsBtn" class="settings-btn" aria-label="Manage categories" type="button">&#9881;</button>
+      <h1 class="title-row">
+        <svg class="title-logo" viewBox="0 0 160 220" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect x="10" y="25" width="140" height="180" rx="18" fill="#0B4C82" stroke="#8EC1EE" stroke-width="6"/>
+          <rect x="55" y="4" width="50" height="30" rx="9" fill="#0B4C82" stroke="#8EC1EE" stroke-width="6"/>
+          <rect x="30" y="55" width="30" height="30" rx="7" fill="#0B4C82" stroke="#8EC1EE" stroke-width="4.5"/>
+          <path d="M36 70 L42 77 L54 62" fill="none" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+          <rect x="30" y="100" width="30" height="30" rx="7" fill="#0B4C82" stroke="#8EC1EE" stroke-width="4.5"/>
+          <path d="M36 115 L42 122 L54 107" fill="none" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+          <rect x="30" y="145" width="30" height="30" rx="7" fill="#0B4C82" stroke="#8EC1EE" stroke-width="4.5"/>
+        </svg>
+        <span>To-do</span>
+        <span class="app-label" id="appLabelHeader">Work</span>
+      </h1>
+      <p id="dateLabel">today</p>
+      <p class="version-label">v8.7 (Work)</p>
+    </header>
+
+    <p class="due-today-top" id="dueTodayTop">
+      <span class="filter-trigger" id="dueTodayTopTrigger">Due today: <span id="dueTodayTopCount">0</span></span>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <span class="filter-trigger" id="pendingTopTrigger">Pending: <span id="pendingTopCount">0</span></span>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <span class="filter-trigger" id="overdueTopTrigger">Overdue: <span id="overdueTopCount">0</span></span>
+    </p>
+
+    <div class="tabs">
+      <button class="tab active" id="tabActive" type="button">To-do</button>
+      <button class="tab" id="tabPending" type="button">Pending</button>
+      <button class="tab" id="tabDone" type="button">Completed</button>
+    </div>
+
+    <div class="sort-row">
+      <label for="sortSelect" class="sort-label">Sort by</label>
+      <select id="sortSelect">
+        <option value="priority" selected>Priority</option>
+        <option value="due">Due Date</option>
+        <option value="category">Category</option>
+        <option value="assignee">Assigned To</option>
+        <option value="name">Task Name</option>
+      </select>
+    </div>
+
+    <div class="filter-indicator" id="filterIndicator" style="display:none;">
+      <span id="filterIndicatorText"></span>
+      <button id="clearFilterBtn" type="button">Show All</button>
+    </div>
+
+    <button class="new-task-btn" id="newTaskBtn" type="button">+ New Task</button>
+
+    <div class="new-task-overlay" id="newTaskOverlay">
+      <div class="new-task-window">
+        <div class="new-task-titlebar">
+          <span>New Task</span>
+          <button id="newTaskWindowClose" class="new-task-window-close" type="button" aria-label="Close">&#10005;</button>
+        </div>
+        <div class="add-row" id="addRow">
+          <input type="text" id="newItem" placeholder="Write a new task..." maxlength="280" autocomplete="off">
+          <input type="date" id="dueDateInput" aria-label="Due date">
+          <select id="prioritySelect" aria-label="Priority">
+            <option value="high">High</option>
+            <option value="medium" selected>Medium</option>
+            <option value="low">Low</option>
+          </select>
+          <select id="categorySelect" aria-label="Category"></select>
+          <div class="assignee-field">
+            <div class="assignee-field-label">Assigned to</div>
+            <div class="assignee-checklist" id="assigneeChecklist"></div>
+          </div>
+          <div class="assignee-field">
+            <div class="assignee-field-label">Assigned by / from</div>
+            <select id="assignedBySelect" aria-label="Assigned by / from"></select>
+          </div>
+          <div class="add-btn-row">
+            <button id="addBtn">Add</button>
+            <button id="cancelAddBtn" type="button">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="list-header" id="listHeader">
+      <span class="lh-spacer"></span>
+      <span class="lh-task">Task</span>
+      <span class="lh-category">Category</span>
+      <span class="lh-assignee">Assigned</span>
+      <span class="lh-due">Due</span>
+      <span class="lh-completed" id="lhCompleted">Date Completed</span>
+      <span class="lh-priority">Priority</span>
+    </div>
+
+    <ul class="list" id="list"></ul>
+    <div class="empty" id="emptyMsg" style="display:none;">Nothing on the list. Add your first task above.</div>
+
+    <footer>
+      <span id="countLabel">0 items left</span>
+      <span class="footer-actions">
+        <button id="exportBtn">Export</button>
+        <button id="clearBtn">Clear done</button>
+      </span>
+    </footer>
+
+    <div class="summary" id="summaryPanel">
+      <div class="summary-title">Summary</div>
+      <div class="summary-row">
+        <span class="summary-stat"><span class="priority-tag high">high</span> <span id="highCount">0</span></span>
+        <span class="summary-stat"><span class="priority-tag medium">medium</span> <span id="mediumCount">0</span></span>
+        <span class="summary-stat"><span class="priority-tag low">low</span> <span id="lowCount">0</span></span>
+      </div>
+      <div class="summary-row due-today-row">
+        <span class="summary-stat" id="dueTodayStat">Due today: <span id="dueTodayCount">0</span></span>
+        <span class="summary-stat" id="pendingStat">Pending: <span id="pendingSummaryCount">0</span></span>
+        <span class="summary-stat" id="overdueStat">Overdue: <span id="overdueCount">0</span></span>
+      </div>
+    </div>
+
+    <div class="footer-brand">
+      <div class="footer-status" id="footerStatus">
+        <div id="lastSyncLine">Last sync: never</div>
+        <div id="lastExportLine">Last export: never</div>
+      </div>
+      <div class="footer-mark">
+        <svg class="footer-brand-logo" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <circle cx="24" cy="24" r="21" fill="#E3ECFB" stroke="#2F6FE4" stroke-width="2"/>
+          <path d="M15 25 L21 31 L33 18" fill="none" stroke="#2F6FE4" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>To-do</span>
+        <span class="app-label" id="appLabelFooter">Work</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="settingsOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Settings</h2>
+      <button id="closeSettingsBtn" class="modal-close" aria-label="Close" type="button">&#10005;</button>
+    </div>
+
+    <div class="accordion-section">
+      <button class="accordion-header" type="button" data-target="themeContent">
+        <span>Theme</span>
+        <span class="accordion-arrow">&#9656;</span>
+      </button>
+      <div class="accordion-content" id="themeContent">
+        <p class="settings-hint">Pick a color scheme for the app.</p>
+        <div class="theme-options" id="themeOptions">
+          <button class="theme-option" type="button" data-theme="light">
+            <span class="theme-swatch theme-swatch-light"></span>
+            <span>Light</span>
+          </button>
+          <button class="theme-option" type="button" data-theme="dark">
+            <span class="theme-swatch theme-swatch-dark"></span>
+            <span>Dark</span>
+          </button>
+          <button class="theme-option" type="button" data-theme="colourful">
+            <span class="theme-swatch theme-swatch-colourful"></span>
+            <span>Colourful</span>
+          </button>
+          <button class="theme-option" type="button" data-theme="notebook">
+            <span class="theme-swatch theme-swatch-notebook"></span>
+            <span>Old Notebook</span>
+          </button>
+          <button class="theme-option" type="button" data-theme="forest">
+            <span class="theme-swatch theme-swatch-forest"></span>
+            <span>Forest</span>
+          </button>
+          <button class="theme-option" type="button" data-theme="ocean">
+            <span class="theme-swatch theme-swatch-ocean"></span>
+            <span>Ocean</span>
+          </button>
+          <button class="theme-option" type="button" data-theme="sunset">
+            <span class="theme-swatch theme-swatch-sunset"></span>
+            <span>Sunset</span>
+          </button>
+          <button class="theme-option" type="button" data-theme="slate">
+            <span class="theme-swatch theme-swatch-slate"></span>
+            <span>Slate</span>
+          </button>
+          <button class="theme-option" type="button" data-theme="bw">
+            <span class="theme-swatch theme-swatch-bw"></span>
+            <span>Black &amp; White</span>
+          </button>
+          <button class="theme-option" type="button" data-theme="wb">
+            <span class="theme-swatch theme-swatch-wb"></span>
+            <span>White &amp; Black</span>
+          </button>
+          <button class="theme-option" type="button" data-theme="terminal">
+            <span class="theme-swatch theme-swatch-terminal"></span>
+            <span>Terminal</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="accordion-section">
+      <button class="accordion-header" type="button" data-target="categoriesContent">
+        <span>Categories</span>
+        <span class="accordion-arrow">&#9656;</span>
+      </button>
+      <div class="accordion-content" id="categoriesContent">
+        <ul class="category-list" id="categoryList"></ul>
+        <div class="add-category-row">
+          <input type="text" id="newCategoryInput" placeholder="New category name..." maxlength="30" autocomplete="off">
+          <button id="addCategoryBtn">Add</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="accordion-section">
+      <button class="accordion-header" type="button" data-target="assigneesContent">
+        <span>Assigned To</span>
+        <span class="accordion-arrow">&#9656;</span>
+      </button>
+      <div class="accordion-content" id="assigneesContent">
+        <ul class="category-list" id="assigneeList"></ul>
+        <div class="add-category-row">
+          <input type="text" id="newAssigneeInput" placeholder="New person's name..." maxlength="30" autocomplete="off">
+          <button id="addAssigneeBtn">Add</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="accordion-section">
+      <button class="accordion-header" type="button" data-target="assignedByContent">
+        <span>Assigned By / From</span>
+        <span class="accordion-arrow">&#9656;</span>
+      </button>
+      <div class="accordion-content" id="assignedByContent">
+        <ul class="category-list" id="assignedByList"></ul>
+        <div class="add-category-row">
+          <input type="text" id="newAssignedByInput" placeholder="New person's name..." maxlength="30" autocomplete="off">
+          <button id="addAssignedByBtn">Add</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="accordion-section">
+      <button class="accordion-header" type="button" data-target="exportContent">
+        <span>Export</span>
+        <span class="accordion-arrow">&#9656;</span>
+      </button>
+      <div class="accordion-content" id="exportContent">
+        <p class="settings-hint">Download every task &mdash; active and completed &mdash; with its text, dates, priority, category, and subtasks.</p>
+        <button id="exportAllBtn" class="export-all-btn" type="button">Export All Tasks</button>
+        <button id="reportBtn" class="export-all-btn report-btn" type="button">View Summary Report</button>
+        <label class="auto-sync-toggle" id="reportIncludeCompletedLabel">
+          <input type="checkbox" id="reportIncludeCompleted">
+          Include completed tasks in the Summary Report
+        </label>
+      </div>
+    </div>
+
+    <div class="accordion-section">
+      <button class="accordion-header" type="button" data-target="remindersContent">
+        <span>Reminders</span>
+        <span class="accordion-arrow">&#9656;</span>
+      </button>
+      <div class="accordion-content" id="remindersContent">
+        <p class="settings-hint">Opens a pre-filled email in your mail app listing overdue, due-today, and high-priority tasks. You'll still need to hit send &mdash; this app can't send email automatically on its own, or while it's closed.</p>
+        <input type="email" id="reminderEmailInput" class="password-input" placeholder="your@email.com" autocomplete="off">
+        <div class="reminder-radio-group">
+          <label class="reminder-radio-option">
+            <input type="radio" name="emailReportOption" id="emailReportOptionNone" value="none" checked>
+            Task list only
+          </label>
+          <label class="reminder-radio-option">
+            <input type="radio" name="emailReportOption" id="emailReportOptionPdf" value="report">
+            Also open the Summary Report to attach
+          </label>
+        </div>
+        <p class="settings-hint settings-hint-small">Browsers can't attach files to an email draft automatically &mdash; this opens the report in a new tab with a "Print / Save as PDF" button, so you can save it and drag it into the email yourself.</p>
+        <button id="emailPriorityBtn" class="export-all-btn" type="button">Email Priority Tasks</button>
+      </div>
+    </div>
+
+    <div class="accordion-section">
+      <button class="accordion-header" type="button" data-target="importContent">
+        <span>Import</span>
+        <span class="accordion-arrow">&#9656;</span>
+      </button>
+      <div class="accordion-content" id="importContent">
+        <p class="settings-hint">Import tasks from a CSV file exported by this app (Export All Tasks or the Completed export). Imported tasks are added alongside your current list, not replacing it.</p>
+        <input type="file" id="importFileInput" accept=".csv" class="import-file-input">
+        <button id="importBtn" class="export-all-btn" type="button">Import Tasks</button>
+        <div id="importStatus" class="import-status"></div>
+      </div>
+    </div>
+
+    <div class="accordion-section">
+      <button class="accordion-header" type="button" data-target="syncContent">
+        <span>Sync</span>
+        <span class="accordion-arrow">&#9656;</span>
+      </button>
+      <div class="accordion-content" id="syncContent">
+        <p class="settings-hint" id="syncSupportedHint">Link a file inside a cloud-synced folder (Dropbox, Google Drive, OneDrive) to sync your tasks across computers. Click "Sync Now" on each computer &mdash; whichever side has the newest changes wins and gets copied over.</p>
+        <p class="settings-hint" id="syncUnsupportedHint" style="display:none;">One-click file sync needs Chrome or Edge &mdash; this browser doesn't support it. Use Export / Import above to move tasks between computers instead.</p>
+        <div id="syncStatus" class="import-status"></div>
+        <button id="chooseSyncFileBtn" class="export-all-btn" type="button">Choose Sync File</button>
+        <button id="syncNowBtn" class="export-all-btn report-btn" type="button">Sync Now</button>
+        <label class="auto-sync-toggle" id="autoSyncToggleLabel">
+          <input type="checkbox" id="autoSyncToggle">
+          Auto-sync in the background (after changes and every minute)
+        </label>
+        <div id="autoSyncStatus" class="import-status"></div>
+      </div>
+    </div>
+
+    <div class="accordion-section">
+      <button class="accordion-header" type="button" data-target="securityContent">
+        <span>Security</span>
+        <span class="accordion-arrow">&#9656;</span>
+      </button>
+      <div class="accordion-content" id="securityContent">
+        <p class="settings-hint" id="securityHint">Add a password to show a lock screen when you open this app. This is a basic deterrent, not real encryption &mdash; anyone who can view this file's source can bypass it.</p>
+        <div id="passwordStatus" class="password-status"></div>
+        <input type="password" id="newPasswordInput" class="password-input" placeholder="New password" autocomplete="new-password">
+        <button id="setPasswordBtn" class="export-all-btn" type="button">Set Password</button>
+        <button id="removePasswordBtn" class="export-all-btn remove-password-btn" type="button" style="display:none;">Remove Password</button>
+      </div>
+    </div>
+
+    <div class="accordion-section">
+      <button class="accordion-header" type="button" data-target="resetContent">
+        <span>Reset</span>
+        <span class="accordion-arrow">&#9656;</span>
+      </button>
+      <div class="accordion-content" id="resetContent">
+        <p class="settings-hint">Permanently delete every task in this list (active and completed). Categories and settings are kept. This cannot be undone &mdash; consider using Export first if you want a backup.</p>
+        <button id="clearAllTasksBtn" class="export-all-btn remove-password-btn" type="button">Clear All Tasks</button>
+      </div>
+    </div>
+
+    <div class="accordion-section">
+      <button class="accordion-header" type="button" data-target="changelogContent">
+        <span>Changelog</span>
+        <span class="accordion-arrow">&#9656;</span>
+      </button>
+      <div class="accordion-content" id="changelogContent">
+        <ul class="changelog-list">
+          <li><span class="changelog-version">v8.7</span> Reverted "Save task" back to v8.5 behavior (just saves, keeps the panel open). Added a separate "Close" button below it to roll up the panel when you're done.</li>
+          <li><span class="changelog-version">v8.6</span> "Save task" now closes/rolls up the task panel again after saving (Work only &mdash; reverting the v8.1 change that kept it open). Home is unaffected and still leaves the panel open.</li>
+          <li><span class="changelog-version">v8.5</span> Added a radio option to "Email Priority Tasks": "Also open the Summary Report to attach." Since browsers can't attach files to a mailto draft automatically, this opens the report in a separate tab (with its "Print / Save as PDF" button) and adds a note in the email reminding you to attach it manually.</li>
+          <li><span class="changelog-version">v8.4</span> Added "Assigned By / From" &mdash; a new managed list in Settings (below Assigned To), with its own dropdown when adding/editing a task, positioned below "Assigned To." Unlike Assigned To, this is single-select since a task is normally assigned by one person. Export/Import and the Summary Report updated to include it.</li>
+          <li><span class="changelog-version">v8.3</span> Added "Email Priority Tasks" in Settings &mdash; Reminders. Save your email once, then click to open a pre-filled draft listing overdue, due-today, and high-priority tasks. Note: this still requires the app to be open and you to hit Send &mdash; true automatic background email isn't possible without a server.</li>
+          <li><span class="changelog-version">v8.2</span> Fixed a bug where completing a task was blocked by "open subtasks" even when those items were actually Notes, not Subtasks. Since notes have no checkbox and can never be "done," they no longer count toward that check &mdash; only actual unchecked subtasks do.</li>
+          <li><span class="changelog-version">v8.1</span> "Save task" now just saves and keeps the task panel open, instead of closing it &mdash; click the task text again if you want to collapse it. Applies to both Work and Home.</li>
+          <li><span class="changelog-version">v8.0</span> (Work only) Every subtask/note entry now has a small "&rarr; Note" / "&rarr; Subtask" button, so existing entries (created before the Subtask/Note toggle existed) can be reclassified too, not just new ones. Switching to Note clears any "done" state, since notes can't be checked off.</li>
+          <li><span class="changelog-version">v7.9</span> (Work only) Added "Last sync" and "Last export" timestamps to the bottom-left of the footer, updating automatically after any sync (manual or auto) or CSV export, and remembered between sessions.</li>
+          <li><span class="changelog-version">v7.8</span> (Work only) Added a quick Subtask/Note toggle above the add box &mdash; Subtask entries keep the checkbox as before; Note entries skip it entirely, since a note isn't something you check off. Export/Import updated to preserve the distinction.</li>
+          <li><span class="changelog-version">v7.7</span> (Work only) Overdue/High Priority items in the Highlights section now show their due date too (UK format), or "No due date" if none is set.</li>
+          <li><span class="changelog-version">v7.6</span> (Work only) Highlights box now has a solid black border (was a faint light gray) to make it stand out more clearly.</li>
+          <li><span class="changelog-version">v7.5</span> (Work only) Highlights section: dates now show in UK format (DD-MM-YY), and each item is laid out as task name on top with due date/flags on a clearer line below, instead of a cramped side-by-side row.</li>
+          <li><span class="changelog-version">v7.4</span> (Work only) Fixed a flexbox bug in the new Highlights section where task text with any length would overflow off the right edge instead of wrapping. Verified by actually rendering the report and checking it visually.</li>
+          <li><span class="changelog-version">v7.3</span> (Work only) Added a "Highlights" section to the Summary Report, right below the stats bar &mdash; two side-by-side lists showing what's due in the next 7 days, and what's overdue or high priority.</li>
+          <li><span class="changelog-version">v7.2</span> (Work only) Summary Report's "Generated" timestamp now uses UK format (DD/MM/YYYY) instead of the browser's default locale format.</li>
+          <li><span class="changelog-version">v7.1</span> (Work only) Summary Report now excludes completed tasks by default &mdash; tick "Include completed tasks in the Summary Report" in Settings first if you want them included.</li>
+          <li><span class="changelog-version">v7.0</span> (Work only) Removed the logo (header and footer) specifically when using the Terminal theme; it still shows normally on all other themes.</li>
+          <li><span class="changelog-version">v6.9</span> (Work only) Made the divider lines between tasks in the Summary Report more prominent (light gray 1px &rarr; darker gray 2px).</li>
+          <li><span class="changelog-version">v6.8</span> (Work only) Renamed the Summary Report title from "To-do Summary Report" to just "Summary Report."</li>
+          <li><span class="changelog-version">v6.7</span> Fixed a bug where typing a new subtask/note and then clicking a different task (before hitting Add or Save task) would wipe the unsaved text. It's now preserved in memory and restored automatically, even if you switch to another task and back.</li>
+          <li><span class="changelog-version">v6.6</span> (Work only) Summary Report: the stats bar (Total tasks, Active, Pending, Completed, priority breakdown, subtasks done) now sits in a clean 4-column grid spread evenly across two rows, instead of wrapping raggedly.</li>
+          <li><span class="changelog-version">v6.5</span> (Work only) Increased the size of the subtask/note box &mdash; the "add new" field grew from 2 to 4 rows, and the inline edit field from 2 to 3 rows. Both remain resizable.</li>
+          <li><span class="changelog-version">v6.4</span> (Work only) Widened the Category (90px &rarr; 105px) and especially the Assigned To (75px &rarr; 150px) columns; the Task column shrinks accordingly to make room.</li>
+          <li><span class="changelog-version">v6.3</span> (Work only) Categories and Assigned To now stay in alphabetical order everywhere &mdash; Settings lists, dropdowns/checklists, and when new ones are added, renamed, or imported.</li>
+          <li><span class="changelog-version">v6.2</span> (Work only) Renamed the opening pop-up from "Today's Summary" to "This Week's Summary" and made it larger (420px &rarr; 640px, scrollable if needed). It already listed Overdue, Due Today, and Due This Week &mdash; all three remain.</li>
+          <li><span class="changelog-version">v6.1</span> (Work only) Pending tasks with a due date now automatically move back to the active To-do list once that date arrives &mdash; checked on opening the app, and every minute while it stays open.</li>
+          <li><span class="changelog-version">v6.0</span> (Work only) "Assigned To" now supports multiple people per task &mdash; a checkbox list replaces the single dropdown when adding or editing a task. Existing single-assignee tasks migrate automatically. Export/Import and the Summary Report updated to handle multiple names.</li>
+          <li><span class="changelog-version">v5.9</span> (Work only) Increased the size of the "+ New Task" popup window (380px &rarr; 560px wide, with more inner padding).</li>
+          <li><span class="changelog-version">v5.8</span> (Work only) Added a Pending count between Due Today and Overdue, at both the top and bottom of the sheet &mdash; click it to jump straight to the Pending tab.</li>
+          <li><span class="changelog-version">v5.7</span> (Work only) Pending tasks now have a "Move to Complete" button too, alongside "Move to Active" &mdash; no need to rely on the checkbox to finish a pending task.</li>
+          <li><span class="changelog-version">v5.6</span> (Work only) Added a "Pending" tab between To-do and Completed. Move a task there via "Move to Pending" in its expanded view &mdash; it comes off the main To-do list without being marked complete, and can be moved back to Active or checked off as done at any time.</li>
+          <li><span class="changelog-version">v5.5</span> Fixed the date field's calendar icon being invisible (black-on-black) in Dark, White &amp; Black, and Terminal themes.</li>
+          <li><span class="changelog-version">v5.4</span> Terminal theme: changed the outer page background from dark green to pure black.</li>
+          <li><span class="changelog-version">v5.3</span> Added a "Terminal" theme &mdash; black background with bright green text &mdash; 11 themes total in Settings.</li>
+          <li><span class="changelog-version">v5.2</span> Added a "White &amp; Black" theme (the inverse &mdash; black background, white text) &mdash; 10 themes total in Settings.</li>
+          <li><span class="changelog-version">v5.1</span> Added a "Black &amp; White" theme &mdash; 9 themes total in Settings.</li>
+          <li><span class="changelog-version">v5.0</span> Increased the subtask/note character limit from 140 to 5,000, and switched the input to a resizable, multi-line box (Shift+Enter for a new line, Enter to add).</li>
+          <li><span class="changelog-version">v4.9</span> Removed the separate "Add" button next to the subtask/note input &mdash; "Save task" now also adds any typed-but-not-yet-added subtask/note before closing the panel (Enter still adds one without closing).</li>
+          <li><span class="changelog-version">v4.8</span> Added a "Subtasks / Notes" title above the subtask list, and updated the empty message to "No Subtasks / Notes yet."</li>
+          <li><span class="changelog-version">v4.7</span> (Work only) Added "Assigned To" &mdash; a managed list (Settings) just like Categories, with its own column, dropdown when adding/editing tasks, and sort option.</li>
+          <li><span class="changelog-version">v4.6</span> Added four more themes: Forest, Ocean, Sunset, and Slate &mdash; 8 themes total in Settings.</li>
+          <li><span class="changelog-version">v4.5</span> Expanded Theme in Settings from a Light/Dark toggle to four options: Light, Dark, Colourful, and Old Notebook (aged paper tones with a typewriter-style title).</li>
+          <li><span class="changelog-version">v4.4</span> Added a browser confirmation prompt when closing the tab if you have tasks and haven't exported yet this session &mdash; gives you the chance to cancel and export first.</li>
+          <li><span class="changelog-version">v4.3</span> Fixed a bug where Work and Home copies shared the same saved data, since browsers store local files under one shared storage space. Each copy now uses its own namespaced storage, so they're fully independent.</li>
+          <li><span class="changelog-version">v4.2</span> Added a "Clear All Tasks" option in Settings (Reset) to wipe every task in a list and start fresh, with a confirmation showing how many will be deleted.</li>
+          <li><span class="changelog-version">v4.1</span> Added a small badge next to "To-do" (header and footer) and updated the browser tab title, so Work and Home copies of the app are easy to tell apart at a glance.</li>
+          <li><span class="changelog-version">v4.0</span> Fixed dropdown menus in Dark theme showing invisible white-on-white text &mdash; option lists now use the theme's colors explicitly.</li>
+          <li><span class="changelog-version">v3.9</span> Fixed a bug where "Overdue" in the top banner would flash red just because "Due today" had items, even with zero overdue tasks. They now flash independently.</li>
+          <li><span class="changelog-version">v3.8</span> Added a Light/Dark theme toggle in Settings &mdash; your choice is saved and remembered next time you open the app.</li>
+          <li><span class="changelog-version">v3.7</span> Moved the original checkmark-circle logo to the bottom "To-do" footer mark; the header keeps the new clipboard-checklist logo.</li>
+          <li><span class="changelog-version">v3.6</span> Replaced the checkmark-circle logo with a new clipboard-and-checklist logo, in the header and footer.</li>
+          <li><span class="changelog-version">v3.5</span> Increased the size of the header logo and "To-do" title.</li>
+          <li><span class="changelog-version">v3.4</span> Default sort on opening the app changed back to Priority.</li>
+          <li><span class="changelog-version">v3.3</span> "Due Today" and "Overdue" (top and bottom) are now clickable &mdash; click one to filter the list to just those tasks, with a "Show All" chip to clear it.</li>
+          <li><span class="changelog-version">v3.2</span> Overdue tasks now also get a row highlight, matching the same light blue used for "due today."</li>
+          <li><span class="changelog-version">v3.1</span> A task can no longer be marked complete while it still has open subtasks &mdash; you'll get a warning listing how many are left.</li>
+          <li><span class="changelog-version">v3.0</span> Added an Overdue counter alongside Due Today, at both the top and bottom of the sheet, in the same style and with the same flash-red behavior.</li>
+          <li><span class="changelog-version">v2.9</span> Added more blue throughout the app &mdash; header and column-header underlines, section dividers, and input focus states now use a blue accent instead of black/green.</li>
+          <li><span class="changelog-version">v2.8</span> Default sort on opening the app changed from Priority to Category.</li>
+          <li><span class="changelog-version">v2.7</span> Added a small logo + "To-do" mark to the bottom right of the app.</li>
+          <li><span class="changelog-version">v2.6</span> Added a checkmark logo beside the "To-do" title in the header.</li>
+          <li><span class="changelog-version">v2.5</span> Switched the typewriter font (Special Elite / Courier Prime) to Nunito, a softer, easier-to-read sans-serif, throughout the app.</li>
+          <li><span class="changelog-version">v2.4</span> Added a summary pop-up on opening the app, showing overdue tasks, tasks due today, and tasks due this week (only appears if there's something to show).</li>
+          <li><span class="changelog-version">v2.3</span> Added an "Auto-sync" toggle &mdash; automatically syncs in the background after changes and every minute while the app is open, once a sync file is linked.</li>
+          <li><span class="changelog-version">v2.2</span> Added one-click Sync (Settings) &mdash; link a file in a cloud-synced folder and sync tasks across computers with a single click. Chrome/Edge only.</li>
+          <li><span class="changelog-version">v2.1</span> "+ New Task" now opens in a floating popup window instead of expanding inline.</li>
+          <li><span class="changelog-version">v2.0</span> Added bold group dividers when sorting by Priority, Category, or Due Date, so each group is clearly separated.</li>
+          <li><span class="changelog-version">v1.9</span> Added this changelog viewer to Settings.</li>
+          <li><span class="changelog-version">v1.8</span> Settings reorganized into a collapsible accordion (Categories, Export, Import, Security).</li>
+          <li><span class="changelog-version">v1.7</span> Moved the top "Due today" counter below the header divider and enlarged it.</li>
+          <li><span class="changelog-version">v1.6</span> Added a second "Due today" counter at the top of the sheet.</li>
+          <li><span class="changelog-version">v1.5</span> Added a printable Summary Report (Settings &rarr; Export).</li>
+          <li><span class="changelog-version">v1.4</span> "Delete task" now requires a confirming second click.</li>
+          <li><span class="changelog-version">v1.3</span> Removed the "Created" date label from the task panel footer.</li>
+          <li><span class="changelog-version">v1.2</span> Deleting a subtask now requires a confirming second click.</li>
+          <li><span class="changelog-version">v1.1</span> Each subtask now shows its own added date (dd/mm).</li>
+          <li><span class="changelog-version">v1.0</span> Version number first added to the sheet.</li>
+        </ul>
+      </div>
+    </div>
+
+    <button id="closeSettingsBottomBtn" class="close-settings-bottom-btn" type="button">Close</button>
+  </div>
+</div>
+
+<div class="modal-overlay lock-overlay" id="lockOverlay">
+  <div class="modal lock-box">
+    <div class="modal-header">
+      <h2>Locked</h2>
+    </div>
+    <p class="settings-hint">Enter your password to view your to-do list.</p>
+    <input type="password" id="unlockInput" class="password-input" placeholder="Password" autocomplete="current-password">
+    <button id="unlockBtn" class="export-all-btn" type="button">Unlock</button>
+    <div id="unlockError" class="unlock-error"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="dueSummaryOverlay">
+  <div class="modal due-summary-modal">
+    <div class="modal-header">
+      <h2>This Week's Summary</h2>
+      <button id="closeDueSummaryBtn" class="modal-close" aria-label="Close" type="button">&#10005;</button>
+    </div>
+    <div id="dueSummaryBody"></div>
+    <button id="dueSummaryOkBtn" class="export-all-btn" type="button">Got it</button>
+  </div>
+</div>
+
+<script>
+  const listEl = document.getElementById('list');
+  const emptyMsg = document.getElementById('emptyMsg');
+  const listHeader = document.getElementById('listHeader');
+  const lhCompleted = document.getElementById('lhCompleted');
+  const countLabel = document.getElementById('countLabel');
+  const input = document.getElementById('newItem');
+  const dueDateInput = document.getElementById('dueDateInput');
+  const prioritySelect = document.getElementById('prioritySelect');
+  const categorySelect = document.getElementById('categorySelect');
+  const assigneeChecklist = document.getElementById('assigneeChecklist');
+  const addBtn = document.getElementById('addBtn');
+  const clearBtn = document.getElementById('clearBtn');
+  const exportBtn = document.getElementById('exportBtn');
+  const dateLabel = document.getElementById('dateLabel');
+  const tabActive = document.getElementById('tabActive');
+  const tabPending = document.getElementById('tabPending');
+  const tabDone = document.getElementById('tabDone');
+  const addRow = document.getElementById('addRow');
+  const newTaskBtn = document.getElementById('newTaskBtn');
+  const newTaskOverlay = document.getElementById('newTaskOverlay');
+  const sortSelect = document.getElementById('sortSelect');
+  const cancelAddBtn = document.getElementById('cancelAddBtn');
+  const settingsBtn = document.getElementById('settingsBtn');
+  const settingsOverlay = document.getElementById('settingsOverlay');
+  const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+  const categoryList = document.getElementById('categoryList');
+  const newCategoryInput = document.getElementById('newCategoryInput');
+  const addCategoryBtn = document.getElementById('addCategoryBtn');
+  const assigneeList = document.getElementById('assigneeList');
+  const newAssigneeInput = document.getElementById('newAssigneeInput');
+  const addAssigneeBtn = document.getElementById('addAssigneeBtn');
+  const assignedByListEl = document.getElementById('assignedByList');
+  const newAssignedByInput = document.getElementById('newAssignedByInput');
+  const addAssignedByBtn = document.getElementById('addAssignedByBtn');
+  const assignedBySelect = document.getElementById('assignedBySelect');
+  const exportAllBtn = document.getElementById('exportAllBtn');
+  const reminderEmailInput = document.getElementById('reminderEmailInput');
+  const emailPriorityBtn = document.getElementById('emailPriorityBtn');
+  const chooseSyncFileBtn = document.getElementById('chooseSyncFileBtn');
+  const syncNowBtn = document.getElementById('syncNowBtn');
+  const syncStatusEl = document.getElementById('syncStatus');
+  const syncSupportedHint = document.getElementById('syncSupportedHint');
+  const syncUnsupportedHint = document.getElementById('syncUnsupportedHint');
+  const autoSyncToggle = document.getElementById('autoSyncToggle');
+  const autoSyncToggleLabel = document.getElementById('autoSyncToggleLabel');
+  const autoSyncStatusEl = document.getElementById('autoSyncStatus');
+  const reportBtn = document.getElementById('reportBtn');
+  const lockBtn = document.getElementById('lockBtn');
+  const lockOverlay = document.getElementById('lockOverlay');
+  const passwordStatus = document.getElementById('passwordStatus');
+  const newPasswordInput = document.getElementById('newPasswordInput');
+  const setPasswordBtn = document.getElementById('setPasswordBtn');
+  const removePasswordBtn = document.getElementById('removePasswordBtn');
+  const unlockInput = document.getElementById('unlockInput');
+  const unlockBtn = document.getElementById('unlockBtn');
+  const unlockError = document.getElementById('unlockError');
+
+  dateLabel.textContent = new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' });
+
+  let todos = [];
+  let categories = ['Work', 'Personal', 'Errands'];
+  let assignees = [];
+  let assignedByOptions = [];
+  let selectedAddAssignees = [];
+  let expandedIds = new Set();
+  const subtaskDrafts = {};
+  const addEntryTypeByItem = {};
+  let confirmingSubtaskDelete = new Set();
+  let confirmingTaskDelete = new Set();
+  let page = 'active';
+  let addFormOpen = false;
+  let sortBy = 'priority';
+  let filterMode = null;
+  let hasExportedThisSession = false;
+  const STORAGE_PREFIX = 'work_';
+  const STORAGE_KEY = STORAGE_PREFIX + 'todos';
+  const CATEGORIES_KEY = STORAGE_PREFIX + 'categories';
+  const ASSIGNEES_KEY = STORAGE_PREFIX + 'assignees';
+  const ASSIGNED_BY_KEY = STORAGE_PREFIX + 'assignedByOptions';
+  const THEME_KEY = STORAGE_PREFIX + 'theme';
+  const LOCAL_UPDATED_KEY = STORAGE_PREFIX + 'localDataUpdatedAt';
+  let localDataUpdatedAt = 0;
+  let syncFileHandle = null;
+  const AUTO_SYNC_KEY = STORAGE_PREFIX + 'autoSyncEnabled';
+  const LAST_SYNC_KEY = STORAGE_PREFIX + 'lastSyncAt';
+  const LAST_EXPORT_KEY = STORAGE_PREFIX + 'lastExportAt';
+  const REMINDER_EMAIL_KEY = STORAGE_PREFIX + 'reminderEmail';
+  let lastSyncAt = 0;
+  let lastExportAt = 0;
+  let autoSyncEnabled = false;
+  let autoSyncTimer = null;
+  const syncSupported = 'showSaveFilePicker' in window;
+  const PASSWORD_HASH_KEY = STORAGE_PREFIX + 'appPasswordHash';
+  let passwordHash = '';
+
+  function sortAlpha(arr) {
+    arr.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+  }
+
+  function uid() {
+    return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  }
+
+  function formatDate(timestamp) {
+    if (!timestamp) return '';
+    const d = new Date(timestamp);
+    if (isNaN(d.getTime())) return '';
+    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  }
+
+  function formatDateDDMM(timestamp) {
+    if (!timestamp) return '';
+    const d = new Date(timestamp);
+    if (isNaN(d.getTime())) return '';
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    return day + '/' + month;
+  }
+
+  function formatFooterTimestamp(timestamp) {
+    if (!timestamp) return 'never';
+    const d = new Date(timestamp);
+    if (isNaN(d.getTime())) return 'never';
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const time = d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+    return day + '/' + month + ' ' + time;
+  }
+
+  function updateFooterStatus() {
+    const syncLine = document.getElementById('lastSyncLine');
+    const exportLine = document.getElementById('lastExportLine');
+    if (syncLine) syncLine.textContent = 'Last sync: ' + formatFooterTimestamp(lastSyncAt);
+    if (exportLine) exportLine.textContent = 'Last export: ' + formatFooterTimestamp(lastExportAt);
+  }
+
+  function toISODate(value) {
+    if (!value) return '';
+    if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      return value;
+    }
+    const d = new Date(value);
+    if (isNaN(d.getTime())) return '';
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return year + '-' + month + '-' + day;
+  }
+
+  function toUKDateShort(value) {
+    const iso = toISODate(value);
+    if (!iso) return '';
+    const [yyyy, mm, dd] = iso.split('-');
+    return dd + '-' + mm + '-' + yyyy.slice(2);
+  }
+
+  function isPastDue(dueDate) {
+    if (!dueDate) return false;
+    const due = new Date(dueDate);
+    if (isNaN(due.getTime())) return false;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return due.getTime() < today.getTime();
+  }
+
+  function checkPendingDueDates() {
+    const todayStr = todayDateString();
+    let changed = false;
+    todos.forEach(t => {
+      if (!t.done && t.pending && t.dueDate && t.dueDate <= todayStr) {
+        t.pending = false;
+        changed = true;
+      }
+    });
+    return changed;
+  }
+
+  function todayDateString() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return year + '-' + month + '-' + day;
+  }
+
+  const hasPlatformStorage = typeof window.storage !== 'undefined' && window.storage !== null;
+
+  async function storageGet(key) {
+    if (hasPlatformStorage) {
+      try {
+        return await window.storage.get(key, false);
+      } catch (e) {
+        // Expected the first time a key hasn't been saved yet (e.g. new install,
+        // or a newly-added key like "categories") - not a real failure, so we
+        // just quietly fall through to local storage instead of logging it.
+      }
+    }
+    try {
+      const raw = localStorage.getItem(key);
+      return raw ? { key, value: raw, shared: false } : null;
+    } catch (e) {
+      console.error('Local storage read failed', e);
+      return null;
+    }
+  }
+
+  let writeQueue = Promise.resolve();
+
+  function queuedStorageSet(key, value) {
+    writeQueue = writeQueue
+      .catch(() => {})
+      .then(() => storageSetWithRetry(key, value));
+    return writeQueue;
+  }
+
+  async function storageSetWithRetry(key, value) {
+    if (hasPlatformStorage) {
+      try {
+        await window.storage.set(key, value, false);
+        return;
+      } catch (e) {
+        try {
+          await new Promise(r => setTimeout(r, 400));
+          await window.storage.set(key, value, false);
+          return;
+        } catch (e2) {
+          console.warn('Platform storage write failed twice, falling back to local storage', e2);
+        }
+      }
+    }
+    try {
+      localStorage.setItem(key, value);
+    } catch (e3) {
+      console.error('Local storage write failed', e3);
+    }
+  }
+
+  const VALID_THEMES = ['light', 'dark', 'colourful', 'notebook', 'forest', 'ocean', 'sunset', 'slate', 'bw', 'wb', 'terminal'];
+
+  function applyTheme(theme) {
+    if (!VALID_THEMES.includes(theme)) theme = 'light';
+    document.body.classList.remove('theme-dark', 'theme-colourful', 'theme-notebook', 'theme-forest', 'theme-ocean', 'theme-sunset', 'theme-slate', 'theme-bw', 'theme-wb', 'theme-terminal');
+    if (theme !== 'light') {
+      document.body.classList.add('theme-' + theme);
+    }
+    document.querySelectorAll('.theme-option').forEach(btn => {
+      btn.classList.toggle('selected', btn.dataset.theme === theme);
+    });
+  }
+
+  async function selectTheme(theme) {
+    applyTheme(theme);
+    await queuedStorageSet(THEME_KEY, theme);
+  }
+
+  document.querySelectorAll('.theme-option').forEach(btn => {
+    btn.addEventListener('click', () => selectTheme(btn.dataset.theme));
+  });
+
+  async function load() {
+    try {
+      const themeResult = await storageGet(THEME_KEY);
+      applyTheme(themeResult && themeResult.value ? themeResult.value : 'light');
+    } catch (e) {
+      applyTheme('light');
+    }
+    try {
+      const result = await storageGet(STORAGE_KEY);
+      todos = result ? JSON.parse(result.value) : [];
+    } catch (e) {
+      todos = [];
+    }
+    if (checkPendingDueDates()) {
+      save();
+    }
+    try {
+      const catResult = await storageGet(CATEGORIES_KEY);
+      if (catResult) {
+        const parsed = JSON.parse(catResult.value);
+        if (Array.isArray(parsed)) categories = parsed;
+      }
+    } catch (e) {
+      // keep default categories
+    }
+    sortAlpha(categories);
+    try {
+      const assigneeResult = await storageGet(ASSIGNEES_KEY);
+      if (assigneeResult) {
+        const parsed = JSON.parse(assigneeResult.value);
+        if (Array.isArray(parsed)) assignees = parsed;
+      }
+    } catch (e) {
+      // keep default assignees
+    }
+    sortAlpha(assignees);
+    try {
+      const assignedByResult = await storageGet(ASSIGNED_BY_KEY);
+      if (assignedByResult) {
+        const parsed = JSON.parse(assignedByResult.value);
+        if (Array.isArray(parsed)) assignedByOptions = parsed;
+      }
+    } catch (e) {
+      // keep default assignedByOptions
+    }
+    sortAlpha(assignedByOptions);
+    try {
+      const pwResult = await storageGet(PASSWORD_HASH_KEY);
+      if (pwResult && pwResult.value) passwordHash = pwResult.value;
+    } catch (e) {
+      // no password set yet
+    }
+    try {
+      const updatedResult = await storageGet(LOCAL_UPDATED_KEY);
+      if (updatedResult && updatedResult.value) {
+        localDataUpdatedAt = parseInt(updatedResult.value, 10) || 0;
+      }
+    } catch (e) {
+      // no timestamp recorded yet
+    }
+    try {
+      const lastSyncResult = await storageGet(LAST_SYNC_KEY);
+      if (lastSyncResult && lastSyncResult.value) lastSyncAt = parseInt(lastSyncResult.value, 10) || 0;
+    } catch (e) {
+      // no sync recorded yet
+    }
+    try {
+      const lastExportResult = await storageGet(LAST_EXPORT_KEY);
+      if (lastExportResult && lastExportResult.value) lastExportAt = parseInt(lastExportResult.value, 10) || 0;
+    } catch (e) {
+      // no export recorded yet
+    }
+    try {
+      const reminderEmailResult = await storageGet(REMINDER_EMAIL_KEY);
+      if (reminderEmailResult && reminderEmailResult.value) reminderEmailInput.value = reminderEmailResult.value;
+    } catch (e) {
+      // no saved email yet
+    }
+    updateFooterStatus();
+    initSyncUI();
+    populateCategorySelect();
+    renderCategoryList();
+    populateAssigneeChecklist();
+    renderAssigneeList();
+    populateAssignedBySelect();
+    renderAssignedByList();
+    updateSecurityUI();
+    if (passwordHash) {
+      showLock();
+    }
+    render();
+    if (!passwordHash) {
+      maybeShowDueSummary();
+    }
+  }
+
+  async function saveCategories() {
+    await queuedStorageSet(CATEGORIES_KEY, JSON.stringify(categories));
+  }
+
+  async function saveAssignees() {
+    await queuedStorageSet(ASSIGNEES_KEY, JSON.stringify(assignees));
+  }
+
+  async function saveAssignedByOptions() {
+    await queuedStorageSet(ASSIGNED_BY_KEY, JSON.stringify(assignedByOptions));
+  }
+
+  let saveInFlight = false;
+  let savePending = false;
+
+  async function save() {
+    if (saveInFlight) {
+      savePending = true;
+      return;
+    }
+    saveInFlight = true;
+    try {
+      localDataUpdatedAt = Date.now();
+      await queuedStorageSet(STORAGE_KEY, JSON.stringify(todos));
+      await queuedStorageSet(LOCAL_UPDATED_KEY, String(localDataUpdatedAt));
+    } finally {
+      saveInFlight = false;
+      if (savePending) {
+        savePending = false;
+        save();
+      }
+      if (typeof debouncedAutoSync === 'function') debouncedAutoSync();
+    }
+  }
+
+  function debounce(fn, delay) {
+    let timer = null;
+    return (...args) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => fn(...args), delay);
+    };
+  }
+
+  const debouncedSave = debounce(save, 600);
+
+  function getGroupInfo(item, sortField) {
+    if (sortField === 'priority') {
+      const p = item.priority || 'medium';
+      return { key: p, label: p.charAt(0).toUpperCase() + p.slice(1) + ' Priority' };
+    }
+    if (sortField === 'category') {
+      const c = item.category || '';
+      return { key: c, label: c || 'No Category' };
+    }
+    if (sortField === 'due') {
+      const d = item.dueDate || '';
+      return { key: d, label: d ? formatDate(d) : 'No Due Date' };
+    }
+    if (sortField === 'assignee') {
+      const list = item.assignees || (item.assignedTo ? [item.assignedTo] : []);
+      const a = list.join(', ');
+      return { key: a, label: a || 'Unassigned' };
+    }
+    return null;
+  }
+
+  function render() {
+    listEl.innerHTML = '';
+
+    const priorityOrder = { high: 0, medium: 1, low: 2 };
+    const sortComparators = {
+      priority: (a, b) => priorityOrder[a.priority || 'medium'] - priorityOrder[b.priority || 'medium'],
+      due: (a, b) => {
+        if (!a.dueDate && !b.dueDate) return 0;
+        if (!a.dueDate) return 1;
+        if (!b.dueDate) return -1;
+        return a.dueDate.localeCompare(b.dueDate);
+      },
+      category: (a, b) => {
+        const catA = (a.category || '').toLowerCase();
+        const catB = (b.category || '').toLowerCase();
+        if (!catA && !catB) return 0;
+        if (!catA) return 1;
+        if (!catB) return -1;
+        return catA.localeCompare(catB);
+      },
+      assignee: (a, b) => {
+        const asA = ((a.assignees && a.assignees.join(', ')) || a.assignedTo || '').toLowerCase();
+        const asB = ((b.assignees && b.assignees.join(', ')) || b.assignedTo || '').toLowerCase();
+        if (!asA && !asB) return 0;
+        if (!asA) return 1;
+        if (!asB) return -1;
+        return asA.localeCompare(asB);
+      },
+      name: (a, b) => a.text.toLowerCase().localeCompare(b.text.toLowerCase())
+    };
+    const todayStr = todayDateString();
+    const visible = todos
+      .filter(t => {
+        if (page === 'done') return t.done;
+        if (page === 'pending') return !t.done && t.pending;
+        return !t.done && !t.pending;
+      })
+      .filter(t => {
+        if (page !== 'active' || !filterMode) return true;
+        if (filterMode === 'dueToday') return t.dueDate === todayStr;
+        if (filterMode === 'overdue') return isPastDue(t.dueDate);
+        return true;
+      })
+      .sort(sortComparators[sortBy] || sortComparators.priority);
+
+    const filterIndicator = document.getElementById('filterIndicator');
+    const filterIndicatorText = document.getElementById('filterIndicatorText');
+    if (page === 'active' && filterMode) {
+      filterIndicator.style.display = 'flex';
+      filterIndicatorText.textContent = 'Showing: ' + (filterMode === 'dueToday' ? 'Due Today' : 'Overdue') + ' (' + visible.length + ')';
+    } else {
+      filterIndicator.style.display = 'none';
+    }
+
+    document.getElementById('dueTodayStat').classList.toggle('filter-active', filterMode === 'dueToday');
+    document.getElementById('overdueStat').classList.toggle('filter-active', filterMode === 'overdue');
+    document.getElementById('dueTodayTopTrigger').classList.toggle('filter-active', filterMode === 'dueToday');
+    document.getElementById('overdueTopTrigger').classList.toggle('filter-active', filterMode === 'overdue');
+
+    listHeader.style.display = visible.length === 0 ? 'none' : 'grid';
+    listHeader.classList.toggle('grid-done', page === 'done');
+    lhCompleted.style.display = page === 'done' ? 'block' : 'none';
+
+    if (visible.length === 0) {
+      emptyMsg.textContent = page === 'active'
+        ? (filterMode ? 'No tasks match this filter.' : 'Nothing on the list. Add your first task above.')
+        : page === 'pending'
+          ? 'No pending tasks.'
+          : 'No completed tasks yet.';
+      emptyMsg.style.display = 'block';
+    } else {
+      emptyMsg.style.display = 'none';
+      let previousGroupKey = null;
+      visible.forEach((item, idx) => {
+        const group = getGroupInfo(item, sortBy);
+        if (group && group.key !== previousGroupKey) {
+          const divider = document.createElement('li');
+          divider.className = 'group-divider' + (idx === 0 ? ' first' : '');
+          const dividerLabel = document.createElement('span');
+          dividerLabel.textContent = group.label;
+          divider.appendChild(dividerLabel);
+          listEl.appendChild(divider);
+          previousGroupKey = group.key;
+        }
+
+        const li = document.createElement('li');
+        const isDueToday = !item.done && item.dueDate === todayDateString();
+        const isRowOverdue = !item.done && isPastDue(item.dueDate);
+        li.className = 'item' + (item.done ? ' done' : '') + (isDueToday ? ' due-today' : '') + (isRowOverdue ? ' overdue-row' : '');
+
+        const box = document.createElement('div');
+        box.className = 'box';
+        box.innerHTML = '<svg viewBox="0 0 24 24"><polyline points="4 12 10 18 20 6"/></svg>';
+        box.addEventListener('click', () => toggle(item.id));
+
+        const taskText = document.createElement('div');
+        taskText.className = 'task-text' + (item.priority === 'high' ? ' high-priority' : '');
+        taskText.textContent = item.text;
+
+        const categoryCell = document.createElement('div');
+        categoryCell.className = 'cell cell-category';
+        if (item.category) {
+          const categoryTag = document.createElement('span');
+          categoryTag.className = 'category-tag';
+          categoryTag.textContent = item.category;
+          categoryCell.appendChild(categoryTag);
+        }
+
+        const itemAssignees = item.assignees || (item.assignedTo ? [item.assignedTo] : []);
+        const assigneeCell = document.createElement('div');
+        assigneeCell.className = 'cell cell-assignee';
+        if (itemAssignees.length > 0) {
+          const assigneeTag = document.createElement('span');
+          assigneeTag.className = 'category-tag';
+          assigneeTag.textContent = itemAssignees.join(', ');
+          assigneeTag.title = itemAssignees.join(', ');
+          assigneeCell.appendChild(assigneeTag);
+        }
+
+        const dueCell = document.createElement('div');
+        dueCell.className = 'cell cell-due';
+        if (item.dueDate) {
+          const isOverdue = !item.done && isPastDue(item.dueDate);
+          dueCell.className += ' created' + (isOverdue ? ' overdue' : '');
+          dueCell.textContent = isOverdue ? 'Overdue' : formatDate(item.dueDate);
+        }
+
+        const priorityTag = document.createElement('span');
+        const priority = item.priority || 'medium';
+        priorityTag.className = 'priority-tag ' + priority;
+        priorityTag.textContent = priority;
+
+        const stamp = document.createElement('div');
+        stamp.className = 'stamp';
+        stamp.textContent = 'done';
+
+        const row = document.createElement('div');
+        row.className = 'row';
+        row.appendChild(box);
+        row.appendChild(taskText);
+        row.appendChild(categoryCell);
+        row.appendChild(assigneeCell);
+        row.appendChild(dueCell);
+
+        if (page === 'done') {
+          row.classList.add('grid-done');
+          const completedCell = document.createElement('div');
+          completedCell.className = 'cell cell-completed';
+          if (item.done && item.completedAt) {
+            completedCell.className += ' created';
+            completedCell.textContent = 'Done ' + formatDate(item.completedAt);
+          }
+          row.appendChild(completedCell);
+        }
+
+        row.appendChild(priorityTag);
+        row.appendChild(stamp);
+        li.appendChild(row);
+
+        taskText.addEventListener('click', () => toggleExpanded(item.id));
+
+        if (expandedIds.has(item.id)) {
+          const panel = document.createElement('div');
+          panel.className = 'notes-panel';
+
+          const editFields = document.createElement('div');
+          editFields.className = 'edit-fields';
+
+          const editName = document.createElement('input');
+          editName.type = 'text';
+          editName.className = 'edit-name';
+          editName.value = item.text;
+          editName.maxLength = 280;
+          editName.addEventListener('input', () => {
+            item.text = editName.value;
+            taskText.textContent = editName.value;
+            debouncedSave();
+          });
+
+          const editMetaRow = document.createElement('div');
+          editMetaRow.className = 'edit-meta-row';
+
+          const editDue = document.createElement('input');
+          editDue.type = 'date';
+          editDue.className = 'edit-due';
+          editDue.value = item.dueDate || '';
+          editDue.addEventListener('change', () => {
+            item.dueDate = editDue.value || '';
+            save();
+            render();
+          });
+
+          const editPriority = document.createElement('select');
+          editPriority.className = 'edit-priority';
+          ['high', 'medium', 'low'].forEach(p => {
+            const opt = document.createElement('option');
+            opt.value = p;
+            opt.textContent = p.charAt(0).toUpperCase() + p.slice(1);
+            if ((item.priority || 'medium') === p) opt.selected = true;
+            editPriority.appendChild(opt);
+          });
+          editPriority.addEventListener('change', () => {
+            item.priority = editPriority.value;
+            save();
+            render();
+          });
+
+          const editCategory = document.createElement('select');
+          editCategory.className = 'edit-category';
+          const noCatOpt = document.createElement('option');
+          noCatOpt.value = '';
+          noCatOpt.textContent = 'No category';
+          if (!item.category) noCatOpt.selected = true;
+          editCategory.appendChild(noCatOpt);
+          categories.forEach(cat => {
+            const opt = document.createElement('option');
+            opt.value = cat;
+            opt.textContent = cat;
+            if (item.category === cat) opt.selected = true;
+            editCategory.appendChild(opt);
+          });
+          editCategory.addEventListener('change', () => {
+            item.category = editCategory.value;
+            save();
+            render();
+          });
+
+          if (!item.assignees) {
+            item.assignees = item.assignedTo ? [item.assignedTo] : [];
+          }
+
+          const editAssigneeField = document.createElement('div');
+          editAssigneeField.className = 'assignee-field';
+
+          const editAssigneeLabel = document.createElement('div');
+          editAssigneeLabel.className = 'assignee-field-label';
+          editAssigneeLabel.textContent = 'Assigned to';
+
+          const editAssigneeChecklist = document.createElement('div');
+          editAssigneeChecklist.className = 'assignee-checklist';
+
+          if (assignees.length === 0) {
+            const noneMsg = document.createElement('div');
+            noneMsg.className = 'assignee-checklist-empty';
+            noneMsg.textContent = 'No one added yet (Settings \u2192 Assigned To).';
+            editAssigneeChecklist.appendChild(noneMsg);
+          }
+
+          assignees.forEach(person => {
+            const label = document.createElement('label');
+            label.className = 'assignee-checkbox-row';
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.checked = item.assignees.includes(person);
+            checkbox.addEventListener('change', () => {
+              if (checkbox.checked) {
+                if (!item.assignees.includes(person)) item.assignees.push(person);
+              } else {
+                item.assignees = item.assignees.filter(p => p !== person);
+              }
+              item.assignedTo = item.assignees[0] || '';
+              save();
+              render();
+            });
+
+            const nameSpan = document.createElement('span');
+            nameSpan.textContent = person;
+
+            label.appendChild(checkbox);
+            label.appendChild(nameSpan);
+            editAssigneeChecklist.appendChild(label);
+          });
+
+          editAssigneeField.appendChild(editAssigneeLabel);
+          editAssigneeField.appendChild(editAssigneeChecklist);
+
+          const editAssignedByField = document.createElement('div');
+          editAssignedByField.className = 'assignee-field';
+
+          const editAssignedByLabel = document.createElement('div');
+          editAssignedByLabel.className = 'assignee-field-label';
+          editAssignedByLabel.textContent = 'Assigned by / from';
+
+          const editAssignedBy = document.createElement('select');
+          editAssignedBy.className = 'edit-category';
+          const noAssignedByOpt = document.createElement('option');
+          noAssignedByOpt.value = '';
+          noAssignedByOpt.textContent = 'Unassigned';
+          if (!item.assignedBy) noAssignedByOpt.selected = true;
+          editAssignedBy.appendChild(noAssignedByOpt);
+          assignedByOptions.forEach(person => {
+            const opt = document.createElement('option');
+            opt.value = person;
+            opt.textContent = person;
+            if (item.assignedBy === person) opt.selected = true;
+            editAssignedBy.appendChild(opt);
+          });
+          editAssignedBy.addEventListener('change', () => {
+            item.assignedBy = editAssignedBy.value;
+            save();
+            render();
+          });
+
+          editAssignedByField.appendChild(editAssignedByLabel);
+          editAssignedByField.appendChild(editAssignedBy);
+
+          editMetaRow.appendChild(editDue);
+          editMetaRow.appendChild(editPriority);
+          editMetaRow.appendChild(editCategory);
+
+          editFields.appendChild(editName);
+          editFields.appendChild(editMetaRow);
+          editFields.appendChild(editAssigneeField);
+          editFields.appendChild(editAssignedByField);
+
+          if (!item.subtasks) {
+            item.subtasks = item.notesList
+              ? item.notesList.map(n => ({ id: uid(), text: n.text, done: false, createdAt: n.createdAt || item.createdAt }))
+              : (item.notes ? [{ id: uid(), text: item.notes, done: false, createdAt: item.createdAt }] : []);
+          }
+
+          const subtaskListTitle = document.createElement('div');
+          subtaskListTitle.className = 'subtask-list-title';
+          subtaskListTitle.textContent = 'Subtasks / Notes';
+
+          const subtaskList = document.createElement('div');
+          subtaskList.className = 'subtask-list';
+
+          item.subtasks.forEach(sub => {
+            const isNote = sub.type === 'note';
+            const subRow = document.createElement('div');
+            subRow.className = 'subtask-item' + (sub.done ? ' done' : '') + (isNote ? ' note-entry' : '');
+
+            let subBox = null;
+            if (isNote) {
+              subBox = document.createElement('div');
+              subBox.className = 'subtask-note-icon';
+              subBox.textContent = 'NOTE';
+              subBox.title = 'This is a note (no checkbox)';
+            } else {
+              subBox = document.createElement('div');
+              subBox.className = 'subtask-box';
+              subBox.innerHTML = '<svg viewBox="0 0 24 24"><polyline points="4 12 10 18 20 6"/></svg>';
+              subBox.addEventListener('click', () => {
+                sub.done = !sub.done;
+                save();
+                render();
+              });
+            }
+
+            const subText = document.createElement('div');
+            subText.className = 'subtask-text';
+            subText.textContent = sub.text;
+            subText.title = 'Click to edit';
+            subText.addEventListener('click', () => {
+              const editInput = document.createElement('textarea');
+              editInput.className = 'subtask-edit-input';
+              editInput.maxLength = 5000;
+              editInput.rows = 3;
+              editInput.value = sub.text;
+              subRow.replaceChild(editInput, subText);
+              editInput.focus();
+              editInput.select();
+
+              const commit = () => {
+                const value = editInput.value.trim();
+                if (value) sub.text = value;
+                save();
+                render();
+              };
+              editInput.addEventListener('blur', commit);
+              editInput.addEventListener('keydown', e => {
+                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); editInput.blur(); }
+                if (e.key === 'Escape') { editInput.value = sub.text; editInput.blur(); }
+              });
+            });
+
+            const subDate = document.createElement('div');
+            subDate.className = 'subtask-date';
+            subDate.textContent = formatDateDDMM(sub.createdAt || item.createdAt);
+            subDate.title = 'Date created';
+
+            const isConfirming = confirmingSubtaskDelete.has(sub.id);
+
+            const subTypeToggle = document.createElement('button');
+            subTypeToggle.type = 'button';
+            subTypeToggle.className = 'subtask-type-toggle';
+            subTypeToggle.title = isNote ? 'Change to Subtask (adds a checkbox)' : 'Change to Note (removes the checkbox)';
+            subTypeToggle.textContent = isNote ? '\u2192 Subtask' : '\u2192 Note';
+            subTypeToggle.addEventListener('click', () => {
+              sub.type = isNote ? 'subtask' : 'note';
+              if (sub.type === 'note') sub.done = false;
+              save();
+              render();
+            });
+
+            const subDelete = document.createElement('button');
+            subDelete.type = 'button';
+            subDelete.className = 'subtask-delete' + (isConfirming ? ' confirming' : '');
+            subDelete.setAttribute('aria-label', isConfirming ? 'Confirm delete subtask' : 'Delete subtask');
+            subDelete.title = isConfirming ? 'Click again to delete' : 'Delete subtask';
+            subDelete.textContent = isConfirming ? 'Confirm?' : '\u2715';
+            subDelete.addEventListener('click', () => {
+              if (confirmingSubtaskDelete.has(sub.id)) {
+                item.subtasks = item.subtasks.filter(s => s.id !== sub.id);
+                confirmingSubtaskDelete.delete(sub.id);
+                save();
+                render();
+              } else {
+                confirmingSubtaskDelete.add(sub.id);
+                render();
+              }
+            });
+
+            let subCancel = null;
+            if (isConfirming) {
+              subCancel = document.createElement('button');
+              subCancel.type = 'button';
+              subCancel.className = 'subtask-cancel-delete';
+              subCancel.textContent = 'Cancel';
+              subCancel.addEventListener('click', () => {
+                confirmingSubtaskDelete.delete(sub.id);
+                render();
+              });
+            }
+
+            subRow.appendChild(subDate);
+            subRow.appendChild(subBox);
+            subRow.appendChild(subText);
+            subRow.appendChild(subTypeToggle);
+            subRow.appendChild(subDelete);
+            if (subCancel) subRow.appendChild(subCancel);
+            subtaskList.appendChild(subRow);
+          });
+
+          if (item.subtasks.length === 0) {
+            const emptySub = document.createElement('div');
+            emptySub.className = 'subtask-empty';
+            emptySub.textContent = 'No Subtasks / Notes yet.';
+            subtaskList.appendChild(emptySub);
+          }
+
+          const addSubtaskRow = document.createElement('div');
+          addSubtaskRow.className = 'add-subtask-row';
+
+          const entryTypeRow = document.createElement('div');
+          entryTypeRow.className = 'entry-type-row';
+
+          const currentEntryType = addEntryTypeByItem[item.id] || 'subtask';
+
+          const subtaskTypeBtn = document.createElement('button');
+          subtaskTypeBtn.type = 'button';
+          subtaskTypeBtn.className = 'entry-type-btn' + (currentEntryType === 'subtask' ? ' selected' : '');
+          subtaskTypeBtn.textContent = 'Subtask';
+
+          const noteTypeBtn = document.createElement('button');
+          noteTypeBtn.type = 'button';
+          noteTypeBtn.className = 'entry-type-btn' + (currentEntryType === 'note' ? ' selected' : '');
+          noteTypeBtn.textContent = 'Note';
+
+          subtaskTypeBtn.addEventListener('click', () => {
+            addEntryTypeByItem[item.id] = 'subtask';
+            subtaskTypeBtn.classList.add('selected');
+            noteTypeBtn.classList.remove('selected');
+          });
+          noteTypeBtn.addEventListener('click', () => {
+            addEntryTypeByItem[item.id] = 'note';
+            noteTypeBtn.classList.add('selected');
+            subtaskTypeBtn.classList.remove('selected');
+          });
+
+          entryTypeRow.appendChild(subtaskTypeBtn);
+          entryTypeRow.appendChild(noteTypeBtn);
+
+          const addSubtaskInput = document.createElement('textarea');
+          addSubtaskInput.placeholder = 'Add a subtask or note... (Enter to add, Shift+Enter for a new line, or Save task)';
+          addSubtaskInput.className = 'add-subtask-input';
+          addSubtaskInput.maxLength = 5000;
+          addSubtaskInput.rows = 4;
+          addSubtaskInput.value = subtaskDrafts[item.id] || '';
+
+          addSubtaskInput.addEventListener('input', () => {
+            if (addSubtaskInput.value) {
+              subtaskDrafts[item.id] = addSubtaskInput.value;
+            } else {
+              delete subtaskDrafts[item.id];
+            }
+          });
+
+          const addSubtask = () => {
+            const value = addSubtaskInput.value.trim();
+            if (!value) return;
+            const entryType = addEntryTypeByItem[item.id] || 'subtask';
+            item.subtasks.push({ id: uid(), text: value, done: false, type: entryType, createdAt: Date.now() });
+            addSubtaskInput.value = '';
+            delete subtaskDrafts[item.id];
+            save();
+            render();
+          };
+
+          addSubtaskInput.addEventListener('keydown', e => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              addSubtask();
+            }
+          });
+
+          addSubtaskRow.appendChild(entryTypeRow);
+          addSubtaskRow.appendChild(addSubtaskInput);
+
+          const panelFooter = document.createElement('div');
+          panelFooter.className = 'notes-footer';
+
+          const isConfirmingTaskDelete = confirmingTaskDelete.has(item.id);
+
+          const remove = document.createElement('button');
+          remove.className = 'remove' + (isConfirmingTaskDelete ? ' confirming' : '');
+          remove.setAttribute('aria-label', isConfirmingTaskDelete ? 'Confirm delete task' : 'Delete task');
+          remove.title = isConfirmingTaskDelete ? 'Click again to delete' : 'Delete task';
+          remove.textContent = isConfirmingTaskDelete ? 'Confirm?' : 'Delete task';
+          remove.addEventListener('click', () => {
+            if (confirmingTaskDelete.has(item.id)) {
+              removeItem(item.id);
+            } else {
+              confirmingTaskDelete.add(item.id);
+              render();
+            }
+          });
+
+          let cancelTaskDeleteBtn = null;
+          if (isConfirmingTaskDelete) {
+            cancelTaskDeleteBtn = document.createElement('button');
+            cancelTaskDeleteBtn.type = 'button';
+            cancelTaskDeleteBtn.className = 'cancel-task-delete';
+            cancelTaskDeleteBtn.textContent = 'Cancel';
+            cancelTaskDeleteBtn.addEventListener('click', () => {
+              confirmingTaskDelete.delete(item.id);
+              render();
+            });
+          }
+
+          const saveTaskBtn = document.createElement('button');
+          saveTaskBtn.className = 'save-task';
+          saveTaskBtn.textContent = 'Save task';
+          saveTaskBtn.addEventListener('click', () => {
+            const pendingSubtask = addSubtaskInput.value.trim();
+            if (pendingSubtask) {
+              const entryType = addEntryTypeByItem[item.id] || 'subtask';
+              item.subtasks.push({ id: uid(), text: pendingSubtask, done: false, type: entryType, createdAt: Date.now() });
+              addSubtaskInput.value = '';
+              delete subtaskDrafts[item.id];
+            }
+            save();
+            render();
+          });
+
+          const closeTaskBtn = document.createElement('button');
+          closeTaskBtn.type = 'button';
+          closeTaskBtn.className = 'close-task';
+          closeTaskBtn.textContent = 'Close';
+          closeTaskBtn.addEventListener('click', () => {
+            toggleExpanded(item.id);
+          });
+
+          let pendingToggleBtn = null;
+          let markCompleteBtn = null;
+          if (!item.done) {
+            pendingToggleBtn = document.createElement('button');
+            pendingToggleBtn.type = 'button';
+            pendingToggleBtn.className = 'pending-toggle';
+            pendingToggleBtn.textContent = item.pending ? 'Move to Active' : 'Move to Pending';
+            pendingToggleBtn.addEventListener('click', () => {
+              item.pending = !item.pending;
+              save();
+              toggleExpanded(item.id);
+            });
+
+            if (item.pending) {
+              markCompleteBtn = document.createElement('button');
+              markCompleteBtn.type = 'button';
+              markCompleteBtn.className = 'mark-complete-btn';
+              markCompleteBtn.textContent = 'Move to Complete';
+              markCompleteBtn.addEventListener('click', () => {
+                toggle(item.id);
+              });
+            }
+          }
+
+          panelFooter.appendChild(remove);
+          if (cancelTaskDeleteBtn) panelFooter.appendChild(cancelTaskDeleteBtn);
+          if (pendingToggleBtn) panelFooter.appendChild(pendingToggleBtn);
+          if (markCompleteBtn) panelFooter.appendChild(markCompleteBtn);
+          panelFooter.appendChild(saveTaskBtn);
+
+          panel.appendChild(editFields);
+          panel.appendChild(subtaskListTitle);
+          panel.appendChild(subtaskList);
+          panel.appendChild(addSubtaskRow);
+          panel.appendChild(panelFooter);
+          panel.appendChild(closeTaskBtn);
+          li.appendChild(panel);
+        }
+
+        listEl.appendChild(li);
+      });
+    }
+
+    const remaining = todos.filter(t => !t.done && !t.pending).length;
+    const pendingCount = todos.filter(t => !t.done && t.pending).length;
+    const completed = todos.filter(t => t.done).length;
+    countLabel.textContent = page === 'active'
+      ? remaining + (remaining === 1 ? ' item left' : ' items left')
+      : page === 'pending'
+        ? pendingCount + (pendingCount === 1 ? ' item pending' : ' items pending')
+        : completed + (completed === 1 ? ' item completed' : ' items completed');
+
+    newTaskOverlay.classList.toggle('open', page === 'active' && addFormOpen);
+    newTaskBtn.style.display = page === 'active' ? 'block' : 'none';
+    clearBtn.style.display = page === 'done' && completed > 0 ? 'inline' : 'none';
+    exportBtn.style.display = page === 'done' && completed > 0 ? 'inline' : 'none';
+
+    updateSummary();
+  }
+
+  function updateSummary() {
+    const openTasks = todos.filter(t => !t.done);
+    const highCount = openTasks.filter(t => (t.priority || 'medium') === 'high').length;
+    const mediumCount = openTasks.filter(t => (t.priority || 'medium') === 'medium').length;
+    const lowCount = openTasks.filter(t => (t.priority || 'medium') === 'low').length;
+    const today = todayDateString();
+    const dueTodayCount = openTasks.filter(t => t.dueDate === today).length;
+    const overdueCount = openTasks.filter(t => isPastDue(t.dueDate)).length;
+    const pendingCount = openTasks.filter(t => t.pending).length;
+
+    document.getElementById('highCount').textContent = highCount;
+    document.getElementById('mediumCount').textContent = mediumCount;
+    document.getElementById('lowCount').textContent = lowCount;
+    document.getElementById('dueTodayCount').textContent = dueTodayCount;
+    document.getElementById('dueTodayTopCount').textContent = dueTodayCount;
+    document.getElementById('overdueCount').textContent = overdueCount;
+    document.getElementById('overdueTopCount').textContent = overdueCount;
+    document.getElementById('pendingSummaryCount').textContent = pendingCount;
+    document.getElementById('pendingTopCount').textContent = pendingCount;
+
+    document.getElementById('dueTodayStat').classList.toggle('flash', dueTodayCount > 0);
+    document.getElementById('overdueStat').classList.toggle('flash', overdueCount > 0);
+    document.getElementById('dueTodayTopTrigger').classList.toggle('flash', dueTodayCount > 0);
+    document.getElementById('overdueTopTrigger').classList.toggle('flash', overdueCount > 0);
+  }
+
+  function setPage(next) {
+    page = next;
+    if (page !== 'active') filterMode = null;
+    tabActive.classList.toggle('active', page === 'active');
+    tabPending.classList.toggle('active', page === 'pending');
+    tabDone.classList.toggle('active', page === 'done');
+    render();
+  }
+
+  function getDueSummaryData() {
+    const todayStr = todayDateString();
+    const todayTime = new Date(todayStr + 'T00:00:00').getTime();
+    const weekEndTime = todayTime + 7 * 24 * 60 * 60 * 1000;
+
+    const overdue = [];
+    const dueToday = [];
+    const dueThisWeek = [];
+
+    todos.forEach(t => {
+      if (t.done || !t.dueDate) return;
+      if (t.dueDate === todayStr) {
+        dueToday.push(t);
+        return;
+      }
+      const d = new Date(t.dueDate + 'T00:00:00');
+      if (isNaN(d.getTime())) return;
+      if (d.getTime() < todayTime) {
+        overdue.push(t);
+      } else if (d.getTime() <= weekEndTime) {
+        dueThisWeek.push(t);
+      }
+    });
+
+    const byDue = (a, b) => (a.dueDate || '').localeCompare(b.dueDate || '');
+    overdue.sort(byDue);
+    dueThisWeek.sort(byDue);
+
+    return { overdue, dueToday, dueThisWeek };
+  }
+
+  function buildDueSummarySection(title, items, extraClass) {
+    if (items.length === 0) return '';
+    const rows = items.map(t =>
+      '<li><span class="due-summary-task">' + escapeHtml(t.text) + '</span>' +
+      '<span class="due-summary-date">' + escapeHtml(formatDate(t.dueDate)) + '</span></li>'
+    ).join('');
+    return '<div class="due-summary-section' + (extraClass ? ' ' + extraClass : '') + '">' +
+      '<div class="due-summary-title">' + title + ' (' + items.length + ')</div>' +
+      '<ul class="due-summary-list">' + rows + '</ul>' +
+      '</div>';
+  }
+
+  function maybeShowDueSummary() {
+    const { overdue, dueToday, dueThisWeek } = getDueSummaryData();
+    if (overdue.length === 0 && dueToday.length === 0 && dueThisWeek.length === 0) return;
+
+    const body = document.getElementById('dueSummaryBody');
+    body.innerHTML =
+      buildDueSummarySection('Overdue', overdue, 'overdue') +
+      buildDueSummarySection('Due Today', dueToday) +
+      buildDueSummarySection('Due This Week', dueThisWeek);
+
+    document.getElementById('dueSummaryOverlay').classList.add('open');
+  }
+
+  function addItem() {
+    const value = input.value.trim();
+    if (!value) return;
+    const priority = prioritySelect.value || 'medium';
+    const dueDate = dueDateInput.value || '';
+    const category = categorySelect.value || '';
+    const taskAssignees = selectedAddAssignees.slice();
+    const assignedTo = taskAssignees[0] || '';
+    const assignedBy = assignedBySelect.value || '';
+    todos.push({ id: uid(), text: value, done: false, createdAt: Date.now(), priority, dueDate, category, assignedTo, assignees: taskAssignees, assignedBy });
+    input.value = '';
+    prioritySelect.value = 'medium';
+    dueDateInput.value = '';
+    categorySelect.value = '';
+    selectedAddAssignees = [];
+    populateAssigneeChecklist();
+    assignedBySelect.value = '';
+    addFormOpen = false;
+    render();
+    save();
+  }
+
+  function toggleExpanded(id) {
+    if (expandedIds.has(id)) {
+      expandedIds.delete(id);
+    } else {
+      expandedIds.add(id);
+    }
+    render();
+  }
+
+  function toggle(id) {
+    const item = todos.find(t => t.id === id);
+    if (item) {
+      if (!item.done) {
+        const openSubtasks = (item.subtasks || []).filter(s => s.type !== 'note' && !s.done);
+        if (openSubtasks.length > 0) {
+          alert('This task still has ' + openSubtasks.length + ' open subtask' + (openSubtasks.length === 1 ? '' : 's') + '. Complete them first before closing this task.');
+          return;
+        }
+      }
+      item.done = !item.done;
+      item.completedAt = item.done ? Date.now() : null;
+      if (item.done) item.pending = false;
+    }
+    render();
+    save();
+  }
+
+  function removeItem(id) {
+    todos = todos.filter(t => t.id !== id);
+    confirmingTaskDelete.delete(id);
+    expandedIds.delete(id);
+    delete subtaskDrafts[id];
+    delete addEntryTypeByItem[id];
+    render();
+    save();
+  }
+
+  clearBtn.addEventListener('click', () => {
+    todos = todos.filter(t => !t.done);
+    render();
+    save();
+  });
+
+  function csvEscape(value) {
+    const str = String(value == null ? '' : value);
+    if (/[",\n]/.test(str)) {
+      return '"' + str.replace(/"/g, '""') + '"';
+    }
+    return str;
+  }
+
+  function parseCsv(text) {
+    const rows = [];
+    let row = [];
+    let field = '';
+    let inQuotes = false;
+
+    for (let i = 0; i < text.length; i++) {
+      const char = text[i];
+      if (inQuotes) {
+        if (char === '"') {
+          if (text[i + 1] === '"') {
+            field += '"';
+            i++;
+          } else {
+            inQuotes = false;
+          }
+        } else {
+          field += char;
+        }
+      } else if (char === '"') {
+        inQuotes = true;
+      } else if (char === ',') {
+        row.push(field);
+        field = '';
+      } else if (char === '\n') {
+        row.push(field);
+        field = '';
+        rows.push(row);
+        row = [];
+      } else if (char === '\r') {
+        // ignore, handled with the following \n
+      } else {
+        field += char;
+      }
+    }
+
+    if (field.length > 0 || row.length > 0) {
+      row.push(field);
+      rows.push(row);
+    }
+
+    return rows.filter(r => !(r.length === 1 && r[0] === ''));
+  }
+
+  function parseISODateToTimestamp(value) {
+    if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+    const t = new Date(value + 'T00:00:00').getTime();
+    return isNaN(t) ? null : t;
+  }
+
+  function importTasksFromCsv(text) {
+    const parsed = parseCsv(text);
+    if (parsed.length < 2) {
+      showImportStatus('No data found in that file.', 'error');
+      return;
+    }
+
+    const headers = parsed[0].map(h => h.trim().toLowerCase());
+    const idx = {
+      task: headers.indexOf('task'),
+      status: headers.indexOf('status'),
+      priority: headers.indexOf('priority'),
+      category: headers.indexOf('category'),
+      assignee: headers.indexOf('assigned to'),
+      assignedBy: headers.indexOf('assigned by'),
+      created: headers.indexOf('created'),
+      due: headers.indexOf('due'),
+      completed: headers.indexOf('completed'),
+      subtasks: headers.indexOf('subtasks'),
+      notes: headers.indexOf('notes')
+    };
+
+    if (idx.task === -1) {
+      showImportStatus("That doesn't look like a file exported from this app.", 'error');
+      return;
+    }
+
+    let importedCount = 0;
+    let newCategoryAdded = false;
+    let newAssigneeAdded = false;
+    let newAssignedByAdded = false;
+
+    for (let r = 1; r < parsed.length; r++) {
+      const row = parsed[r];
+      const text_ = (row[idx.task] || '').trim();
+      if (!text_) continue;
+
+      const hasStatusColumn = idx.status !== -1;
+      const statusValue = hasStatusColumn ? (row[idx.status] || '').trim().toLowerCase() : '';
+      const done = hasStatusColumn ? statusValue === 'completed' : true;
+      const pending = hasStatusColumn ? statusValue === 'pending' : false;
+
+      let priority = (idx.priority !== -1 ? row[idx.priority] : 'medium') || 'medium';
+      priority = priority.trim().toLowerCase();
+      if (!['high', 'medium', 'low'].includes(priority)) priority = 'medium';
+
+      const category = idx.category !== -1 ? (row[idx.category] || '').trim() : '';
+      const assigneesRaw = idx.assignee !== -1 ? (row[idx.assignee] || '').trim() : '';
+      const importedAssignees = assigneesRaw
+        ? assigneesRaw.split(/[;,]/).map(s => s.trim()).filter(Boolean)
+        : [];
+      const assignedTo = importedAssignees[0] || '';
+      const assignedBy = idx.assignedBy !== -1 ? (row[idx.assignedBy] || '').trim() : '';
+      const dueDate = idx.due !== -1 && /^\d{4}-\d{2}-\d{2}$/.test((row[idx.due] || '').trim())
+        ? row[idx.due].trim()
+        : '';
+      const createdAt = idx.created !== -1
+        ? (parseISODateToTimestamp((row[idx.created] || '').trim()) || Date.now())
+        : Date.now();
+      const completedAt = done && idx.completed !== -1
+        ? parseISODateToTimestamp((row[idx.completed] || '').trim())
+        : null;
+      let subtasks = [];
+      if (idx.subtasks !== -1 && row[idx.subtasks]) {
+        subtasks = row[idx.subtasks]
+          .split('|')
+          .map(s => s.trim())
+          .filter(Boolean)
+          .map(s => {
+            const dateMatch = s.match(/\((\d{4}-\d{2}-\d{2})\)\s*$/);
+            const subCreatedAt = dateMatch ? (parseISODateToTimestamp(dateMatch[1]) || createdAt) : createdAt;
+            const withoutDate = dateMatch ? s.slice(0, dateMatch.index).trim() : s;
+            const noteMatch = withoutDate.match(/^\(note\)\s*(.*)$/i);
+            if (noteMatch) {
+              return { id: uid(), text: noteMatch[1], done: false, type: 'note', createdAt: subCreatedAt };
+            }
+            const match = withoutDate.match(/^\[([ x])\]\s*(.*)$/i);
+            if (match) {
+              return { id: uid(), text: match[2], done: match[1].toLowerCase() === 'x', type: 'subtask', createdAt: subCreatedAt };
+            }
+            return { id: uid(), text: withoutDate, done: false, type: 'subtask', createdAt: subCreatedAt };
+          });
+      } else if (idx.notes !== -1 && row[idx.notes]) {
+        const notesRaw = row[idx.notes].trim();
+        if (notesRaw) subtasks = [{ id: uid(), text: notesRaw, done: false, type: 'subtask', createdAt }];
+      }
+
+      todos.push({
+        id: uid(),
+        text: text_,
+        done,
+        pending,
+        createdAt,
+        priority,
+        dueDate,
+        category,
+        assignedTo,
+        assignees: importedAssignees,
+        assignedBy,
+        subtasks,
+        completedAt
+      });
+
+      if (category && !categories.includes(category)) {
+        categories.push(category);
+        newCategoryAdded = true;
+      }
+
+      importedAssignees.forEach(person => {
+        if (!assignees.includes(person)) {
+          assignees.push(person);
+          newAssigneeAdded = true;
+        }
+      });
+
+      if (assignedBy && !assignedByOptions.includes(assignedBy)) {
+        assignedByOptions.push(assignedBy);
+        newAssignedByAdded = true;
+      }
+
+      importedCount++;
+    }
+
+    if (importedCount === 0) {
+      showImportStatus('No valid tasks found in that file.', 'error');
+      return;
+    }
+
+    save();
+    if (newCategoryAdded) {
+      sortAlpha(categories);
+      saveCategories();
+      populateCategorySelect();
+      renderCategoryList();
+    }
+    if (newAssigneeAdded) {
+      sortAlpha(assignees);
+      saveAssignees();
+      populateAssigneeChecklist();
+      renderAssigneeList();
+    }
+    if (newAssignedByAdded) {
+      sortAlpha(assignedByOptions);
+      saveAssignedByOptions();
+      populateAssignedBySelect();
+      renderAssignedByList();
+    }
+    render();
+    showImportStatus('Imported ' + importedCount + (importedCount === 1 ? ' task.' : ' tasks.'), 'success');
+  }
+
+  function showImportStatus(message, type) {
+    const el = document.getElementById('importStatus');
+    el.textContent = message;
+    el.className = 'import-status' + (type ? ' ' + type : '');
+  }
+
+  function downloadCsv(headers, rows, filename) {
+    const csv = [headers, ...rows]
+      .map(row => row.map(csvEscape).join(','))
+      .join('\n');
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
+
+  function summarizeSubtasks(item) {
+    if (item.subtasks && item.subtasks.length > 0) {
+      return item.subtasks
+        .map(s => {
+          const isNote = s.type === 'note';
+          const checkbox = isNote ? '(note)' : '[' + (s.done ? 'x' : ' ') + ']';
+          return checkbox + ' ' + s.text + ' (' + toISODate(s.createdAt || item.createdAt) + ')';
+        })
+        .join(' | ');
+    }
+    return '';
+  }
+
+  function getAssigneesText(item) {
+    const list = item.assignees || (item.assignedTo ? [item.assignedTo] : []);
+    return list.join('; ');
+  }
+
+  function exportCompleted() {
+    const completedItems = todos.filter(t => t.done);
+    const headers = ['Task', 'Priority', 'Category', 'Assigned To', 'Assigned By', 'Created', 'Due', 'Completed', 'Subtasks'];
+    const rows = completedItems.map(item => [
+      item.text,
+      item.priority || 'medium',
+      item.category || '',
+      getAssigneesText(item),
+      item.assignedBy || '',
+      toISODate(item.createdAt),
+      toISODate(item.dueDate),
+      toISODate(item.completedAt),
+      summarizeSubtasks(item)
+    ]);
+
+    downloadCsv(headers, rows, 'completed-tasks-' + todayDateString() + '.csv');
+    hasExportedThisSession = true;
+    lastExportAt = Date.now();
+    queuedStorageSet(LAST_EXPORT_KEY, String(lastExportAt));
+    updateFooterStatus();
+  }
+
+  function exportAllTasks() {
+    const headers = ['Task', 'Status', 'Priority', 'Category', 'Assigned To', 'Assigned By', 'Created', 'Due', 'Completed', 'Subtasks'];
+    const rows = todos.map(item => [
+      item.text,
+      item.done ? 'Completed' : (item.pending ? 'Pending' : 'Active'),
+      item.priority || 'medium',
+      item.category || '',
+      getAssigneesText(item),
+      item.assignedBy || '',
+      toISODate(item.createdAt),
+      toISODate(item.dueDate),
+      toISODate(item.completedAt),
+      summarizeSubtasks(item)
+    ]);
+
+    downloadCsv(headers, rows, 'all-tasks-' + todayDateString() + '.csv');
+    hasExportedThisSession = true;
+    lastExportAt = Date.now();
+    queuedStorageSet(LAST_EXPORT_KEY, String(lastExportAt));
+    updateFooterStatus();
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str == null ? '' : String(str);
+    return div.innerHTML;
+  }
+
+  function generateReport() {
+    const includeCompleted = document.getElementById('reportIncludeCompleted').checked;
+    const active = todos.filter(t => !t.done && !t.pending);
+    const pendingTasks = todos.filter(t => !t.done && t.pending);
+    const completed = todos.filter(t => t.done);
+    const priorityOrder = { high: 0, medium: 1, low: 2 };
+
+    const priorityCounts = { high: 0, medium: 0, low: 0 };
+    active.forEach(t => { priorityCounts[t.priority || 'medium']++; });
+
+    const categoryCounts = {};
+    active.forEach(t => {
+      const cat = t.category || 'Uncategorized';
+      categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
+    });
+
+    let totalSubtasks = 0;
+    let doneSubtasks = 0;
+    todos.forEach(t => {
+      (t.subtasks || []).forEach(s => {
+        totalSubtasks++;
+        if (s.done) doneSubtasks++;
+      });
+    });
+
+    const openPool = todos.filter(t => !t.done);
+    const todayStrRpt = todayDateString();
+    const todayTimeRpt = new Date(todayStrRpt + 'T00:00:00').getTime();
+    const weekEndTimeRpt = todayTimeRpt + 7 * 24 * 60 * 60 * 1000;
+    const nextWeekTasks = openPool
+      .filter(t => {
+        if (!t.dueDate) return false;
+        const d = new Date(t.dueDate + 'T00:00:00');
+        if (isNaN(d.getTime())) return false;
+        return d.getTime() >= todayTimeRpt && d.getTime() <= weekEndTimeRpt;
+      })
+      .sort((a, b) => (a.dueDate || '').localeCompare(b.dueDate || ''));
+    const urgentTasks = openPool
+      .filter(t => isPastDue(t.dueDate) || (t.priority || 'medium') === 'high')
+      .sort((a, b) => priorityOrder[a.priority || 'medium'] - priorityOrder[b.priority || 'medium']);
+
+    function renderTaskBlock(t) {
+      const subs = t.subtasks || [];
+      const subsDone = subs.filter(s => s.done).length;
+      const subtaskHtml = subs.length > 0
+        ? '<ul class="rpt-subtasks">' + subs.map(s =>
+            '<li class="' + (s.done ? 'rpt-sub-done' : '') + '">' +
+            (s.done ? '\u2611' : '\u2610') + ' ' + escapeHtml(s.text) +
+            '</li>'
+          ).join('') + '</ul>'
+        : '';
+
+      return '<div class="rpt-task">' +
+        '<div class="rpt-task-row">' +
+          '<span class="rpt-task-name">' + escapeHtml(t.text) + '</span>' +
+          '<span class="rpt-tag rpt-priority-' + (t.priority || 'medium') + '">' + (t.priority || 'medium') + '</span>' +
+        '</div>' +
+        '<div class="rpt-task-meta">' +
+          (t.category ? '<span>Category: ' + escapeHtml(t.category) + '</span>' : '') +
+          (getAssigneesText(t) ? '<span>Assigned: ' + escapeHtml(getAssigneesText(t).replace(/;/g, ',')) + '</span>' : '') +
+          (t.assignedBy ? '<span>From: ' + escapeHtml(t.assignedBy) + '</span>' : '') +
+          (t.dueDate ? '<span>Due: ' + escapeHtml(toISODate(t.dueDate)) + '</span>' : '') +
+          (t.done && t.completedAt ? '<span>Completed: ' + escapeHtml(toISODate(t.completedAt)) + '</span>' : '') +
+          (subs.length > 0 ? '<span>Subtasks: ' + subsDone + '/' + subs.length + '</span>' : '') +
+        '</div>' +
+        subtaskHtml +
+        '</div>';
+    }
+
+    const activeSorted = active.slice().sort((a, b) => priorityOrder[a.priority || 'medium'] - priorityOrder[b.priority || 'medium']);
+    const pendingSorted = pendingTasks.slice().sort((a, b) => priorityOrder[a.priority || 'medium'] - priorityOrder[b.priority || 'medium']);
+    const completedSorted = completed.slice().sort((a, b) => (b.completedAt || 0) - (a.completedAt || 0));
+
+    const now = new Date();
+    const genDD = String(now.getDate()).padStart(2, '0');
+    const genMM = String(now.getMonth() + 1).padStart(2, '0');
+    const genYYYY = now.getFullYear();
+    const genTime = now.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+    const generatedStr = genDD + '/' + genMM + '/' + genYYYY + ' ' + genTime;
+
+    const html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Summary Report</title><style>' +
+      'body{font-family:Georgia,serif;color:#222;max-width:800px;margin:40px auto;padding:0 20px;}' +
+      'h1{font-size:22px;margin-bottom:4px;}' +
+      '.rpt-generated{color:#777;font-size:12px;margin-bottom:24px;}' +
+      '.rpt-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px 20px;padding:16px 0;border-top:2px solid #222;border-bottom:2px solid #222;margin-bottom:24px;}' +
+      '.rpt-stat{font-size:12px;text-align:center;}' +
+      '.rpt-stat b{display:block;font-size:19px;}' +
+      'h2{font-size:16px;border-bottom:1px solid #ccc;padding-bottom:6px;margin-top:32px;}' +
+      '.rpt-task{padding:12px 0;border-bottom:2px solid #999;}' +
+      '.rpt-task-row{display:flex;justify-content:space-between;align-items:center;}' +
+      '.rpt-task-name{font-weight:bold;font-size:14px;}' +
+      '.rpt-tag{font-size:10px;text-transform:uppercase;letter-spacing:0.5px;padding:2px 7px;border-radius:3px;border:1px solid #999;}' +
+      '.rpt-priority-high{color:#b33a3a;border-color:#b33a3a;}' +
+      '.rpt-priority-medium{color:#96631e;border-color:#96631e;}' +
+      '.rpt-priority-low{color:#3f6b4f;border-color:#3f6b4f;}' +
+      '.rpt-task-meta{font-size:11px;color:#666;margin-top:4px;display:flex;gap:14px;flex-wrap:wrap;}' +
+      '.rpt-subtasks{margin:6px 0 0;padding-left:20px;font-size:12px;}' +
+      '.rpt-subtasks li{margin-bottom:2px;}' +
+      '.rpt-sub-done{color:#888;text-decoration:line-through;}' +
+      '.rpt-empty{color:#999;font-style:italic;font-size:13px;}' +
+      '.rpt-highlights{display:flex;flex-wrap:wrap;gap:24px;background:#f7f7f7;border:2px solid #000;border-radius:6px;padding:16px 18px;margin-bottom:28px;}' +
+      '.rpt-highlights h2{width:100%;margin:0 0 12px;border:none;padding:0;font-size:15px;}' +
+      '.rpt-highlight-col{flex:1 1 240px;min-width:0;}' +
+      '.rpt-highlight-col h3{font-size:12px;text-transform:uppercase;letter-spacing:0.5px;color:#555;margin:0 0 8px;}' +
+      '.rpt-highlight-list{list-style:none;margin:0;padding:0;}' +
+      '.rpt-highlight-list li{padding:9px 0;border-bottom:1px solid #e5e5e5;}' +
+      '.rpt-highlight-task{font-size:14px;line-height:1.5;color:#222;}' +
+      '.rpt-highlight-meta{margin-top:3px;font-size:11px;letter-spacing:0.3px;color:#777;}' +
+      '.rpt-highlight-date{font-weight:bold;color:#555;}' +
+      '.rpt-highlight-no-date{font-style:italic;color:#999;}' +
+      '.rpt-highlight-flag{display:inline-block;margin-top:5px;margin-right:5px;font-size:9px;font-weight:bold;letter-spacing:0.5px;padding:2px 6px;border-radius:3px;color:#fff;}' +
+      '.rpt-flag-overdue{background:#b33a3a;}' +
+      '.rpt-flag-high{background:#96631e;}' +
+      '.rpt-print-btn{position:fixed;top:20px;right:20px;background:#222;color:#fff;border:none;padding:8px 16px;font-size:12px;letter-spacing:0.5px;cursor:pointer;border-radius:3px;}' +
+      '@media print{.rpt-print-btn{display:none;}}' +
+      '</style></head><body>' +
+      '<button class="rpt-print-btn" onclick="window.print()">Print / Save as PDF</button>' +
+      '<h1>Summary Report</h1>' +
+      '<div class="rpt-generated">Generated ' + escapeHtml(generatedStr) + '</div>' +
+      '<div class="rpt-stats">' +
+        '<div class="rpt-stat"><b>' + todos.length + '</b>Total tasks</div>' +
+        '<div class="rpt-stat"><b>' + active.length + '</b>Active</div>' +
+        '<div class="rpt-stat"><b>' + pendingTasks.length + '</b>Pending</div>' +
+        '<div class="rpt-stat"><b>' + completed.length + '</b>Completed</div>' +
+        '<div class="rpt-stat"><b>' + priorityCounts.high + '</b>High priority</div>' +
+        '<div class="rpt-stat"><b>' + priorityCounts.medium + '</b>Medium priority</div>' +
+        '<div class="rpt-stat"><b>' + priorityCounts.low + '</b>Low priority</div>' +
+        '<div class="rpt-stat"><b>' + doneSubtasks + '/' + totalSubtasks + '</b>Subtasks done</div>' +
+      '</div>' +
+      '<div class="rpt-highlights">' +
+        '<h2>Highlights</h2>' +
+        '<div class="rpt-highlight-col">' +
+          '<h3>Due in the Next 7 Days (' + nextWeekTasks.length + ')</h3>' +
+          (nextWeekTasks.length > 0
+            ? '<ul class="rpt-highlight-list">' + nextWeekTasks.map(t =>
+                '<li>' +
+                  '<div class="rpt-highlight-task">' + escapeHtml(t.text) + '</div>' +
+                  '<div class="rpt-highlight-meta">Due <span class="rpt-highlight-date">' + escapeHtml(toUKDateShort(t.dueDate)) + '</span></div>' +
+                '</li>'
+              ).join('') + '</ul>'
+            : '<div class="rpt-empty">Nothing due in the next 7 days.</div>') +
+        '</div>' +
+        '<div class="rpt-highlight-col">' +
+          '<h3>Overdue or High Priority (' + urgentTasks.length + ')</h3>' +
+          (urgentTasks.length > 0
+            ? '<ul class="rpt-highlight-list">' + urgentTasks.map(t =>
+                '<li>' +
+                  '<div class="rpt-highlight-task">' + escapeHtml(t.text) + '</div>' +
+                  '<div class="rpt-highlight-meta">' +
+                    (isPastDue(t.dueDate) ? '<span class="rpt-highlight-flag rpt-flag-overdue">OVERDUE</span>' : '') +
+                    ((t.priority || 'medium') === 'high' ? '<span class="rpt-highlight-flag rpt-flag-high">HIGH</span>' : '') +
+                    (t.dueDate ? ' Due <span class="rpt-highlight-date">' + escapeHtml(toUKDateShort(t.dueDate)) + '</span>' : ' <span class="rpt-highlight-no-date">No due date</span>') +
+                  '</div>' +
+                '</li>'
+              ).join('') + '</ul>'
+            : '<div class="rpt-empty">Nothing overdue or high priority.</div>') +
+        '</div>' +
+      '</div>' +
+      '<h2>Active Tasks (' + active.length + ')</h2>' +
+      (activeSorted.length > 0 ? activeSorted.map(renderTaskBlock).join('') : '<div class="rpt-empty">No active tasks.</div>') +
+      '<h2>Pending Tasks (' + pendingTasks.length + ')</h2>' +
+      (pendingSorted.length > 0 ? pendingSorted.map(renderTaskBlock).join('') : '<div class="rpt-empty">No pending tasks.</div>') +
+      (includeCompleted
+        ? '<h2>Completed Tasks (' + completed.length + ')</h2>' +
+          (completedSorted.length > 0 ? completedSorted.map(renderTaskBlock).join('') : '<div class="rpt-empty">No completed tasks.</div>')
+        : '') +
+      '</body></html>';
+
+    const reportWindow = window.open('', '_blank');
+    if (!reportWindow) {
+      alert('Please allow pop-ups for this page to view the report.');
+      return;
+    }
+    reportWindow.document.open();
+    reportWindow.document.write(html);
+    reportWindow.document.close();
+  }
+
+  exportBtn.addEventListener('click', exportCompleted);
+  exportAllBtn.addEventListener('click', exportAllTasks);
+  reportBtn.addEventListener('click', generateReport);
+
+  reminderEmailInput.addEventListener('change', () => {
+    queuedStorageSet(REMINDER_EMAIL_KEY, reminderEmailInput.value.trim());
+  });
+
+  function emailPriorityTasks() {
+    const to = reminderEmailInput.value.trim();
+    const todayStr = todayDateString();
+
+    const overdue = todos.filter(t => !t.done && isPastDue(t.dueDate));
+    const dueToday = todos.filter(t => !t.done && t.dueDate === todayStr);
+    const highPriority = todos.filter(t =>
+      !t.done &&
+      (t.priority || 'medium') === 'high' &&
+      !isPastDue(t.dueDate) &&
+      t.dueDate !== todayStr
+    );
+
+    if (overdue.length === 0 && dueToday.length === 0 && highPriority.length === 0) {
+      alert('Nothing overdue, due today, or high priority right now.');
+      return;
+    }
+
+    const totalCount = overdue.length + dueToday.length + highPriority.length;
+    const subject = 'Priority Tasks (' + totalCount + ') - ' + toUKDateShort(todayStr);
+
+    const lines = [];
+    if (overdue.length > 0) {
+      lines.push('OVERDUE (' + overdue.length + ')');
+      overdue.forEach(t => {
+        lines.push('- ' + t.text + (t.dueDate ? ' (was due ' + toUKDateShort(t.dueDate) + ')' : ''));
+      });
+      lines.push('');
+    }
+    if (dueToday.length > 0) {
+      lines.push('DUE TODAY (' + dueToday.length + ')');
+      dueToday.forEach(t => lines.push('- ' + t.text));
+      lines.push('');
+    }
+    if (highPriority.length > 0) {
+      lines.push('HIGH PRIORITY (' + highPriority.length + ')');
+      highPriority.forEach(t => {
+        lines.push('- ' + t.text + (t.dueDate ? ' (due ' + toUKDateShort(t.dueDate) + ')' : ''));
+      });
+    }
+
+    const includeReport = document.getElementById('emailReportOptionPdf').checked;
+    if (includeReport) {
+      lines.push('');
+      lines.push('(A copy of the Summary Report has been opened in another tab \u2014 use "Print / Save as PDF" there, then attach it to this email before sending.)');
+    }
+
+    const body = lines.join('\n');
+    const mailto = 'mailto:' + encodeURIComponent(to) +
+      '?subject=' + encodeURIComponent(subject) +
+      '&body=' + encodeURIComponent(body);
+
+    if (includeReport) {
+      generateReport();
+    }
+
+    window.location.href = mailto;
+  }
+
+  emailPriorityBtn.addEventListener('click', emailPriorityTasks);
+
+  document.getElementById('importBtn').addEventListener('click', () => {
+    const fileInput = document.getElementById('importFileInput');
+    const file = fileInput.files && fileInput.files[0];
+    if (!file) {
+      showImportStatus('Choose a CSV file first.', 'error');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => importTasksFromCsv(reader.result);
+    reader.onerror = () => showImportStatus('Could not read that file.', 'error');
+    reader.readAsText(file);
+  });
+
+  // --- Sync (File System Access API) ---
+
+  function showSyncStatus(message, type) {
+    syncStatusEl.textContent = message;
+    syncStatusEl.className = 'import-status' + (type ? ' ' + type : '');
+  }
+
+  function openHandleDB() {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open(STORAGE_PREFIX + 'todoSyncDB', 1);
+      req.onupgradeneeded = () => {
+        req.result.createObjectStore('handles');
+      };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  async function storeHandleInIDB(handle) {
+    try {
+      const db = await openHandleDB();
+      await new Promise((resolve, reject) => {
+        const tx = db.transaction('handles', 'readwrite');
+        tx.objectStore('handles').put(handle, STORAGE_PREFIX + 'syncFile');
+        tx.oncomplete = resolve;
+        tx.onerror = () => reject(tx.error);
+      });
+    } catch (e) {
+      // handle persistence is best-effort
+    }
+  }
+
+  async function loadHandleFromIDB() {
+    try {
+      const db = await openHandleDB();
+      return await new Promise(resolve => {
+        const tx = db.transaction('handles', 'readonly');
+        const req = tx.objectStore('handles').get(STORAGE_PREFIX + 'syncFile');
+        req.onsuccess = () => resolve(req.result || null);
+        req.onerror = () => resolve(null);
+      });
+    } catch (e) {
+      return null;
+    }
+  }
+
+  async function initSyncUI() {
+    if (!syncSupported) {
+      syncSupportedHint.style.display = 'none';
+      syncUnsupportedHint.style.display = 'block';
+      chooseSyncFileBtn.style.display = 'none';
+      syncNowBtn.style.display = 'none';
+      autoSyncToggleLabel.style.display = 'none';
+      return;
+    }
+    const handle = await loadHandleFromIDB();
+    if (handle) {
+      syncFileHandle = handle;
+      showSyncStatus('Linked to "' + handle.name + '". Click Sync Now to sync.', '');
+    } else {
+      showSyncStatus('No sync file linked yet.', '');
+    }
+
+    try {
+      const autoResult = await storageGet(AUTO_SYNC_KEY);
+      autoSyncEnabled = !!(autoResult && autoResult.value === 'true');
+    } catch (e) {
+      autoSyncEnabled = false;
+    }
+    autoSyncToggle.checked = autoSyncEnabled;
+    if (autoSyncEnabled && syncFileHandle) {
+      startAutoSyncPolling();
+    }
+  }
+
+  function startAutoSyncPolling() {
+    stopAutoSyncPolling();
+    autoSyncTimer = setInterval(silentAutoSync, 60000);
+  }
+
+  function stopAutoSyncPolling() {
+    if (autoSyncTimer) {
+      clearInterval(autoSyncTimer);
+      autoSyncTimer = null;
+    }
+  }
+
+  async function silentAutoSync() {
+    if (!syncSupported || !syncFileHandle || !autoSyncEnabled) return;
+    let granted = 'prompt';
+    try {
+      granted = await syncFileHandle.queryPermission({ mode: 'readwrite' });
+    } catch (e) {
+      return;
+    }
+    if (granted !== 'granted') {
+      autoSyncStatusEl.textContent = 'Auto-sync paused \u2014 click Sync Now once to reconnect.';
+      autoSyncStatusEl.className = 'import-status error';
+      return;
+    }
+
+    let fileData = null;
+    try {
+      fileData = await readSyncFile(syncFileHandle);
+    } catch (e) {
+      return;
+    }
+
+    const fileUpdatedAt = (fileData && fileData.savedAt) || 0;
+    const now = new Date().toLocaleTimeString();
+
+    if (fileData && fileUpdatedAt > localDataUpdatedAt) {
+      todos = Array.isArray(fileData.todos) ? fileData.todos : [];
+      if (Array.isArray(fileData.categories)) categories = fileData.categories;
+      localDataUpdatedAt = fileUpdatedAt;
+      await queuedStorageSet(STORAGE_KEY, JSON.stringify(todos));
+      await queuedStorageSet(CATEGORIES_KEY, JSON.stringify(categories));
+      await queuedStorageSet(LOCAL_UPDATED_KEY, String(localDataUpdatedAt));
+      populateCategorySelect();
+      renderCategoryList();
+      render();
+      lastSyncAt = Date.now();
+      queuedStorageSet(LAST_SYNC_KEY, String(lastSyncAt));
+      updateFooterStatus();
+      autoSyncStatusEl.textContent = 'Auto-synced ' + now + ' \u2014 pulled changes.';
+      autoSyncStatusEl.className = 'import-status success';
+    } else if (!fileData || localDataUpdatedAt > fileUpdatedAt) {
+      try {
+        await writeSyncFile(syncFileHandle, { todos, categories, savedAt: localDataUpdatedAt });
+        lastSyncAt = Date.now();
+        queuedStorageSet(LAST_SYNC_KEY, String(lastSyncAt));
+        updateFooterStatus();
+        autoSyncStatusEl.textContent = 'Auto-synced ' + now + ' \u2014 pushed changes.';
+        autoSyncStatusEl.className = 'import-status success';
+      } catch (e) {
+        // fail silently in the background; manual Sync Now will surface the error
+      }
+    }
+  }
+
+  const debouncedAutoSync = debounce(() => {
+    if (autoSyncEnabled) silentAutoSync();
+  }, 3000);
+
+  autoSyncToggle.addEventListener('change', async () => {
+    autoSyncEnabled = autoSyncToggle.checked;
+    await queuedStorageSet(AUTO_SYNC_KEY, String(autoSyncEnabled));
+    if (autoSyncEnabled) {
+      if (!syncFileHandle) {
+        await chooseSyncFile();
+      }
+      if (syncFileHandle) {
+        startAutoSyncPolling();
+        silentAutoSync();
+      }
+    } else {
+      stopAutoSyncPolling();
+      autoSyncStatusEl.textContent = '';
+    }
+  });
+
+  async function ensurePermission(handle) {
+    const opts = { mode: 'readwrite' };
+    if ((await handle.queryPermission(opts)) === 'granted') return true;
+    if ((await handle.requestPermission(opts)) === 'granted') return true;
+    return false;
+  }
+
+  async function chooseSyncFile() {
+    try {
+      const handle = await window.showSaveFilePicker({
+        suggestedName: 'todo-sync.json',
+        types: [{ description: 'JSON', accept: { 'application/json': ['.json'] } }]
+      });
+      syncFileHandle = handle;
+      await storeHandleInIDB(handle);
+      showSyncStatus('Linked to "' + handle.name + '". Click Sync Now to sync.', 'success');
+    } catch (e) {
+      // user cancelled the picker
+    }
+  }
+
+  async function readSyncFile(handle) {
+    const file = await handle.getFile();
+    const text = await file.text();
+    if (!text.trim()) return null;
+    try {
+      return JSON.parse(text);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  async function writeSyncFile(handle, data) {
+    const writable = await handle.createWritable();
+    await writable.write(JSON.stringify(data, null, 2));
+    await writable.close();
+  }
+
+  async function performSync() {
+    if (!syncSupported) return;
+
+    if (!syncFileHandle) {
+      await chooseSyncFile();
+      if (!syncFileHandle) return;
+    }
+
+    const permitted = await ensurePermission(syncFileHandle);
+    if (!permitted) {
+      showSyncStatus('Permission for the sync file was denied.', 'error');
+      return;
+    }
+
+    let fileData = null;
+    try {
+      fileData = await readSyncFile(syncFileHandle);
+    } catch (e) {
+      showSyncStatus('Could not read the sync file.', 'error');
+      return;
+    }
+
+    const fileUpdatedAt = (fileData && fileData.savedAt) || 0;
+
+    if (fileData && fileUpdatedAt > localDataUpdatedAt) {
+      todos = Array.isArray(fileData.todos) ? fileData.todos : [];
+      if (Array.isArray(fileData.categories)) categories = fileData.categories;
+      localDataUpdatedAt = fileUpdatedAt;
+      await queuedStorageSet(STORAGE_KEY, JSON.stringify(todos));
+      await queuedStorageSet(CATEGORIES_KEY, JSON.stringify(categories));
+      await queuedStorageSet(LOCAL_UPDATED_KEY, String(localDataUpdatedAt));
+      populateCategorySelect();
+      renderCategoryList();
+      render();
+      lastSyncAt = Date.now();
+      queuedStorageSet(LAST_SYNC_KEY, String(lastSyncAt));
+      updateFooterStatus();
+      showSyncStatus('Synced \u2014 pulled the latest changes from the shared file.', 'success');
+    } else {
+      const now = Date.now();
+      try {
+        await writeSyncFile(syncFileHandle, { todos, categories, savedAt: now });
+        localDataUpdatedAt = now;
+        await queuedStorageSet(LOCAL_UPDATED_KEY, String(now));
+        lastSyncAt = Date.now();
+        queuedStorageSet(LAST_SYNC_KEY, String(lastSyncAt));
+        updateFooterStatus();
+        showSyncStatus('Synced \u2014 pushed your latest changes to the shared file.', 'success');
+      } catch (e) {
+        showSyncStatus('Could not write to the sync file.', 'error');
+      }
+    }
+  }
+
+  chooseSyncFileBtn.addEventListener('click', chooseSyncFile);
+  syncNowBtn.addEventListener('click', performSync);
+
+  addBtn.addEventListener('click', addItem);
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') addItem();
+  });
+
+  newTaskBtn.addEventListener('click', () => {
+    addFormOpen = true;
+    render();
+    input.focus();
+  });
+
+  sortSelect.addEventListener('change', () => {
+    sortBy = sortSelect.value;
+    render();
+  });
+
+  function toggleFilter(mode) {
+    filterMode = (filterMode === mode) ? null : mode;
+    page = 'active';
+    tabActive.classList.add('active');
+    tabDone.classList.remove('active');
+    render();
+  }
+
+  document.getElementById('dueTodayStat').addEventListener('click', () => toggleFilter('dueToday'));
+  document.getElementById('overdueStat').addEventListener('click', () => toggleFilter('overdue'));
+  document.getElementById('dueTodayTopTrigger').addEventListener('click', () => toggleFilter('dueToday'));
+  document.getElementById('overdueTopTrigger').addEventListener('click', () => toggleFilter('overdue'));
+  document.getElementById('pendingStat').addEventListener('click', () => setPage('pending'));
+  document.getElementById('pendingTopTrigger').addEventListener('click', () => setPage('pending'));
+  document.getElementById('clearFilterBtn').addEventListener('click', () => {
+    filterMode = null;
+    render();
+  });
+
+  function closeNewTaskWindow() {
+    input.value = '';
+    prioritySelect.value = 'medium';
+    dueDateInput.value = '';
+    categorySelect.value = '';
+    selectedAddAssignees = [];
+    populateAssigneeChecklist();
+    assignedBySelect.value = '';
+    addFormOpen = false;
+    render();
+  }
+
+  cancelAddBtn.addEventListener('click', closeNewTaskWindow);
+  document.getElementById('newTaskWindowClose').addEventListener('click', closeNewTaskWindow);
+  newTaskOverlay.addEventListener('click', e => {
+    if (e.target === newTaskOverlay) closeNewTaskWindow();
+  });
+
+  tabActive.addEventListener('click', () => setPage('active'));
+  tabPending.addEventListener('click', () => setPage('pending'));
+  tabDone.addEventListener('click', () => setPage('done'));
+
+  function populateCategorySelect() {
+    const previousValue = categorySelect.value;
+    categorySelect.innerHTML = '';
+
+    const noneOpt = document.createElement('option');
+    noneOpt.value = '';
+    noneOpt.textContent = 'No category';
+    categorySelect.appendChild(noneOpt);
+
+    categories.forEach(cat => {
+      const opt = document.createElement('option');
+      opt.value = cat;
+      opt.textContent = cat;
+      categorySelect.appendChild(opt);
+    });
+
+    if (categories.includes(previousValue)) {
+      categorySelect.value = previousValue;
+    } else {
+      categorySelect.value = '';
+    }
+  }
+
+  function renderCategoryList() {
+    categoryList.innerHTML = '';
+
+    if (categories.length === 0) {
+      const empty = document.createElement('li');
+      empty.className = 'category-empty';
+      empty.textContent = 'No categories yet. Add one below.';
+      categoryList.appendChild(empty);
+      return;
+    }
+
+    categories.forEach((cat, index) => {
+      const li = document.createElement('li');
+
+      const nameInput = document.createElement('input');
+      nameInput.type = 'text';
+      nameInput.value = cat;
+      nameInput.maxLength = 30;
+      nameInput.addEventListener('change', () => {
+        renameCategory(index, nameInput.value.trim());
+      });
+
+      const del = document.createElement('button');
+      del.className = 'delete-category';
+      del.textContent = 'Remove';
+      del.addEventListener('click', () => removeCategory(index));
+
+      li.appendChild(nameInput);
+      li.appendChild(del);
+      categoryList.appendChild(li);
+    });
+  }
+
+  function renameCategory(index, newName) {
+    if (!newName) {
+      renderCategoryList();
+      return;
+    }
+    const oldName = categories[index];
+    if (newName === oldName) return;
+    categories[index] = newName;
+    todos.forEach(t => {
+      if (t.category === oldName) t.category = newName;
+    });
+    sortAlpha(categories);
+    saveCategories();
+    save();
+    populateCategorySelect();
+    renderCategoryList();
+    render();
+  }
+
+  function removeCategory(index) {
+    const oldName = categories[index];
+    categories.splice(index, 1);
+    todos.forEach(t => {
+      if (t.category === oldName) t.category = '';
+    });
+    saveCategories();
+    save();
+    populateCategorySelect();
+    renderCategoryList();
+    render();
+  }
+
+  function addCategory() {
+    const name = newCategoryInput.value.trim();
+    if (!name) return;
+    if (categories.some(c => c.toLowerCase() === name.toLowerCase())) {
+      newCategoryInput.value = '';
+      return;
+    }
+    categories.push(name);
+    sortAlpha(categories);
+    newCategoryInput.value = '';
+    saveCategories();
+    populateCategorySelect();
+    renderCategoryList();
+  }
+
+  function populateAssigneeChecklist() {
+    assigneeChecklist.innerHTML = '';
+
+    if (assignees.length === 0) {
+      const emptyMsg = document.createElement('div');
+      emptyMsg.className = 'assignee-checklist-empty';
+      emptyMsg.textContent = 'No one added yet (Settings \u2192 Assigned To).';
+      assigneeChecklist.appendChild(emptyMsg);
+      return;
+    }
+
+    assignees.forEach(person => {
+      const label = document.createElement('label');
+      label.className = 'assignee-checkbox-row';
+
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.checked = selectedAddAssignees.includes(person);
+      checkbox.addEventListener('change', () => {
+        if (checkbox.checked) {
+          if (!selectedAddAssignees.includes(person)) selectedAddAssignees.push(person);
+        } else {
+          selectedAddAssignees = selectedAddAssignees.filter(p => p !== person);
+        }
+      });
+
+      const nameSpan = document.createElement('span');
+      nameSpan.textContent = person;
+
+      label.appendChild(checkbox);
+      label.appendChild(nameSpan);
+      assigneeChecklist.appendChild(label);
+    });
+  }
+
+  function renderAssigneeList() {
+    assigneeList.innerHTML = '';
+
+    if (assignees.length === 0) {
+      const empty = document.createElement('li');
+      empty.className = 'category-empty';
+      empty.textContent = 'No one added yet. Add a name below.';
+      assigneeList.appendChild(empty);
+      return;
+    }
+
+    assignees.forEach((person, index) => {
+      const li = document.createElement('li');
+
+      const nameInput = document.createElement('input');
+      nameInput.type = 'text';
+      nameInput.value = person;
+      nameInput.maxLength = 30;
+      nameInput.addEventListener('change', () => {
+        renameAssignee(index, nameInput.value.trim());
+      });
+
+      const del = document.createElement('button');
+      del.className = 'delete-category';
+      del.textContent = 'Remove';
+      del.addEventListener('click', () => removeAssignee(index));
+
+      li.appendChild(nameInput);
+      li.appendChild(del);
+      assigneeList.appendChild(li);
+    });
+  }
+
+  function renameAssignee(index, newName) {
+    if (!newName) {
+      renderAssigneeList();
+      return;
+    }
+    const oldName = assignees[index];
+    if (newName === oldName) return;
+    assignees[index] = newName;
+    todos.forEach(t => {
+      if (t.assignees) {
+        t.assignees = t.assignees.map(p => p === oldName ? newName : p);
+      }
+      if (t.assignedTo === oldName) t.assignedTo = newName;
+    });
+    sortAlpha(assignees);
+    saveAssignees();
+    save();
+    populateAssigneeChecklist();
+    renderAssigneeList();
+    render();
+  }
+
+  function removeAssignee(index) {
+    const oldName = assignees[index];
+    assignees.splice(index, 1);
+    todos.forEach(t => {
+      if (t.assignees) {
+        t.assignees = t.assignees.filter(p => p !== oldName);
+      }
+      if (t.assignedTo === oldName) t.assignedTo = '';
+    });
+    saveAssignees();
+    save();
+    populateAssigneeChecklist();
+    renderAssigneeList();
+    render();
+  }
+
+  function addAssignee() {
+    const name = newAssigneeInput.value.trim();
+    if (!name) return;
+    if (assignees.some(p => p.toLowerCase() === name.toLowerCase())) {
+      newAssigneeInput.value = '';
+      return;
+    }
+    assignees.push(name);
+    sortAlpha(assignees);
+    newAssigneeInput.value = '';
+    saveAssignees();
+    populateAssigneeChecklist();
+    renderAssigneeList();
+  }
+
+  function populateAssignedBySelect() {
+    const previousValue = assignedBySelect.value;
+    assignedBySelect.innerHTML = '';
+
+    const noneOpt = document.createElement('option');
+    noneOpt.value = '';
+    noneOpt.textContent = 'Unassigned';
+    assignedBySelect.appendChild(noneOpt);
+
+    assignedByOptions.forEach(person => {
+      const opt = document.createElement('option');
+      opt.value = person;
+      opt.textContent = person;
+      assignedBySelect.appendChild(opt);
+    });
+
+    if (assignedByOptions.includes(previousValue)) {
+      assignedBySelect.value = previousValue;
+    } else {
+      assignedBySelect.value = '';
+    }
+  }
+
+  function renderAssignedByList() {
+    assignedByListEl.innerHTML = '';
+
+    if (assignedByOptions.length === 0) {
+      const empty = document.createElement('li');
+      empty.className = 'category-empty';
+      empty.textContent = 'No one added yet. Add a name below.';
+      assignedByListEl.appendChild(empty);
+      return;
+    }
+
+    assignedByOptions.forEach((person, index) => {
+      const li = document.createElement('li');
+
+      const nameInput = document.createElement('input');
+      nameInput.type = 'text';
+      nameInput.value = person;
+      nameInput.maxLength = 30;
+      nameInput.addEventListener('change', () => {
+        renameAssignedBy(index, nameInput.value.trim());
+      });
+
+      const del = document.createElement('button');
+      del.className = 'delete-category';
+      del.textContent = 'Remove';
+      del.addEventListener('click', () => removeAssignedBy(index));
+
+      li.appendChild(nameInput);
+      li.appendChild(del);
+      assignedByListEl.appendChild(li);
+    });
+  }
+
+  function renameAssignedBy(index, newName) {
+    if (!newName) {
+      renderAssignedByList();
+      return;
+    }
+    const oldName = assignedByOptions[index];
+    if (newName === oldName) return;
+    assignedByOptions[index] = newName;
+    todos.forEach(t => {
+      if (t.assignedBy === oldName) t.assignedBy = newName;
+    });
+    sortAlpha(assignedByOptions);
+    saveAssignedByOptions();
+    save();
+    populateAssignedBySelect();
+    renderAssignedByList();
+    render();
+  }
+
+  function removeAssignedBy(index) {
+    const oldName = assignedByOptions[index];
+    assignedByOptions.splice(index, 1);
+    todos.forEach(t => {
+      if (t.assignedBy === oldName) t.assignedBy = '';
+    });
+    saveAssignedByOptions();
+    save();
+    populateAssignedBySelect();
+    renderAssignedByList();
+    render();
+  }
+
+  function addAssignedBy() {
+    const name = newAssignedByInput.value.trim();
+    if (!name) return;
+    if (assignedByOptions.some(p => p.toLowerCase() === name.toLowerCase())) {
+      newAssignedByInput.value = '';
+      return;
+    }
+    assignedByOptions.push(name);
+    sortAlpha(assignedByOptions);
+    newAssignedByInput.value = '';
+    saveAssignedByOptions();
+    populateAssignedBySelect();
+    renderAssignedByList();
+  }
+
+  function openSettings() {
+    renderCategoryList();
+    renderAssigneeList();
+    renderAssignedByList();
+    settingsOverlay.classList.add('open');
+  }
+
+  function closeSettings() {
+    settingsOverlay.classList.remove('open');
+  }
+
+  settingsBtn.addEventListener('click', openSettings);
+
+  document.querySelectorAll('.accordion-header').forEach(header => {
+    header.addEventListener('click', () => {
+      const section = header.closest('.accordion-section');
+      section.classList.toggle('open');
+    });
+  });
+  closeSettingsBtn.addEventListener('click', closeSettings);
+  document.getElementById('closeSettingsBottomBtn').addEventListener('click', closeSettings);
+  settingsOverlay.addEventListener('click', e => {
+    if (e.target === settingsOverlay) closeSettings();
+  });
+  addCategoryBtn.addEventListener('click', addCategory);
+  newCategoryInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') addCategory();
+  });
+  addAssigneeBtn.addEventListener('click', addAssignee);
+  newAssigneeInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') addAssignee();
+  });
+  addAssignedByBtn.addEventListener('click', addAssignedBy);
+  newAssignedByInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') addAssignedBy();
+  });
+
+  async function sha256(text) {
+    const data = new TextEncoder().encode(text);
+    const digest = await crypto.subtle.digest('SHA-256', data);
+    return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  function updateSecurityUI() {
+    if (passwordHash) {
+      passwordStatus.textContent = 'Password protection is ON';
+      passwordStatus.className = 'password-status enabled';
+      newPasswordInput.placeholder = 'New password (replaces current)';
+      setPasswordBtn.textContent = 'Update Password';
+      removePasswordBtn.style.display = 'block';
+      lockBtn.style.display = 'flex';
+    } else {
+      passwordStatus.textContent = 'No password set';
+      passwordStatus.className = 'password-status';
+      newPasswordInput.placeholder = 'New password';
+      setPasswordBtn.textContent = 'Set Password';
+      removePasswordBtn.style.display = 'none';
+      lockBtn.style.display = 'none';
+    }
+  }
+
+  async function setPassword() {
+    const value = newPasswordInput.value;
+    if (!value) return;
+    passwordHash = await sha256(value);
+    newPasswordInput.value = '';
+    await queuedStorageSet(PASSWORD_HASH_KEY, passwordHash);
+    updateSecurityUI();
+  }
+
+  async function removePassword() {
+    passwordHash = '';
+    await queuedStorageSet(PASSWORD_HASH_KEY, '');
+    updateSecurityUI();
+  }
+
+  function showLock() {
+    unlockInput.value = '';
+    unlockError.textContent = '';
+    lockOverlay.classList.add('open');
+    closeSettings();
+  }
+
+  function hideLock() {
+    lockOverlay.classList.remove('open');
+  }
+
+  async function attemptUnlock() {
+    const attempt = await sha256(unlockInput.value);
+    if (attempt === passwordHash) {
+      hideLock();
+      maybeShowDueSummary();
+    } else {
+      unlockError.textContent = 'Incorrect password. Try again.';
+      unlockInput.value = '';
+      unlockInput.focus();
+    }
+  }
+
+  setPasswordBtn.addEventListener('click', setPassword);
+  removePasswordBtn.addEventListener('click', removePassword);
+
+  document.getElementById('clearAllTasksBtn').addEventListener('click', () => {
+    const count = todos.length;
+    if (count === 0) {
+      alert('There are no tasks to clear.');
+      return;
+    }
+    const confirmed = confirm(
+      'This will permanently delete all ' + count + ' task' + (count === 1 ? '' : 's') +
+      ' (active and completed) in this list. Categories and settings are kept.\n\nThis cannot be undone. Continue?'
+    );
+    if (!confirmed) return;
+    todos = [];
+    expandedIds.clear();
+    confirmingTaskDelete.clear();
+    confirmingSubtaskDelete.clear();
+    filterMode = null;
+    save();
+    render();
+  });
+  lockBtn.addEventListener('click', showLock);
+  unlockBtn.addEventListener('click', attemptUnlock);
+  unlockInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') attemptUnlock();
+  });
+
+  function closeDueSummary() {
+    document.getElementById('dueSummaryOverlay').classList.remove('open');
+  }
+
+  document.getElementById('closeDueSummaryBtn').addEventListener('click', closeDueSummary);
+  document.getElementById('dueSummaryOkBtn').addEventListener('click', closeDueSummary);
+  document.getElementById('dueSummaryOverlay').addEventListener('click', e => {
+    if (e.target === document.getElementById('dueSummaryOverlay')) closeDueSummary();
+  });
+
+  setInterval(() => {
+    if (checkPendingDueDates()) {
+      save();
+      render();
+    }
+  }, 60000);
+
+  window.addEventListener('beforeunload', function (e) {
+    if (todos.length > 0 && !hasExportedThisSession) {
+      e.preventDefault();
+      e.returnValue = '';
+      return '';
+    }
+  });
+
+  load();
+</script>
+
+</body>
+</html>
