@@ -89,7 +89,7 @@ const workoutSets = (w) => w.items.reduce((a, it) => a + it.sets.filter((s) => s
 const bestE1rm = (workouts, exId) => { let b = 0; workouts.forEach((w) => w.items.forEach((it) => { if (it.exerciseId === exId) it.sets.forEach((s) => { b = Math.max(b, e1rm(s.weight, s.reps)); }); })); return b; };
 const lastPerf = (workouts, exId) => { for (let i = workouts.length - 1; i >= 0; i--) { const it = workouts[i].items.find((x) => x.exerciseId === exId); if (it && it.sets.length) return it.sets; } return null; };
 const sortedW = (ws) => [...ws].sort((a, b) => a.start - b.start);
-const MUSCLES = ['Chest', 'Back', 'Legs', 'Shoulders', 'Biceps', 'Triceps', 'Core'];
+const MUSCLES = ['Chest', 'Back', 'Legs', 'Shoulders', 'Biceps', 'Triceps', 'Core', 'Other'];
 const dFac = (u) => (u === 'mi' ? 1609.344 : 1000);
 const fmtDist = (m, u) => (m / dFac(u)).toFixed(2);
 const fmtPaceSec = (p) => { const t = Math.round(p); return Math.floor(t / 60) + ':' + String(t % 60).padStart(2, '0'); };
@@ -110,15 +110,138 @@ function niceTicks(min, max, count = 4) {
 }
 
 /* ---------- seed data ---------- */
-const DEFAULT_EX = [
-  ['bench','Bench Press','Chest'],['incline','Incline Dumbbell Press','Chest'],['fly','Chest Fly','Chest'],['pushup','Push-Up','Chest'],['dips','Dips','Chest'],
-  ['deadlift','Deadlift','Back'],['row','Barbell Row','Back'],['pullup','Pull-Up','Back'],['latpd','Lat Pulldown','Back'],['cablerow','Seated Cable Row','Back'],
-  ['squat','Squat','Legs'],['rdl','Romanian Deadlift','Legs'],['legpress','Leg Press','Legs'],['lunge','Walking Lunge','Legs'],['legcurl','Leg Curl','Legs'],['calf','Calf Raise','Legs'],['hipthrust','Hip Thrust','Legs'],
-  ['ohp','Overhead Press','Shoulders'],['lateral','Lateral Raise','Shoulders'],['facepull','Face Pull','Shoulders'],
-  ['curl','Barbell Curl','Biceps'],['hammer','Hammer Curl','Biceps'],
-  ['pushdown','Triceps Pushdown','Triceps'],['skull','Skull Crusher','Triceps'],
-  ['legraise','Hanging Leg Raise','Core'],['crunch','Cable Crunch','Core'],
-].map(([id, name, muscle]) => ({ id, name, muscle, custom: false }));
+const EX_DATA = `
+bench|Bench Press|Chest|Barbell|Pinch shoulder blades, feet planted, lower the bar to mid-chest and press.
+incbench|Incline Bench Press|Chest|Barbell|Bench at 30 degrees. Bar touches the upper chest, elbows about 45 degrees from the body.
+decbench|Decline Bench Press|Chest|Barbell|Brace hard, lower to the lower chest, press without bouncing.
+dbbench|Dumbbell Bench Press|Chest|Dumbbell|Stretch at the bottom, press up and slightly in. Keep wrists stacked over elbows.
+incline|Incline Dumbbell Press|Chest|Dumbbell|Bench at 30 degrees. Press up and slightly in without flaring the elbows.
+smithbench|Smith Machine Bench Press|Chest|Smith Machine|Set the bench so the bar lowers to mid-chest. Control the descent.
+chestpress|Machine Chest Press|Chest|Machine|Seat handles at chest height. Press out without shrugging.
+fly|Chest Fly|Chest|Dumbbell|Soft elbows, wide arc. Stop when you feel a stretch, then squeeze together.
+cablefly|Cable Crossover|Chest|Cable|Step forward, slight forward lean, bring hands together in a hugging arc.
+pecdeck|Pec Deck|Chest|Machine|Back flat on the pad, elbows level with shoulders, squeeze at the front.
+pushup|Push-Up|Chest|Bodyweight|Straight line from head to heels. Chest to the floor, elbows about 45 degrees.
+dips|Dips|Chest|Bodyweight|Lean forward slightly for chest. Lower until shoulders are just below elbows.
+deadlift|Deadlift|Back|Barbell|Bar over mid-foot, flat back, push the floor away and lock out with glutes.
+sumo|Sumo Deadlift|Back|Barbell|Wide stance, toes out, chest tall, spread the floor with your feet.
+trapbar|Trap Bar Deadlift|Back|Trap Bar|Stand in the center, hinge and squat down, drive through the floor.
+rackpull|Rack Pull|Back|Barbell|Bar at knee height. Keep the back flat and finish with a hard glute squeeze.
+row|Barbell Row|Back|Barbell|Hinge to about 45 degrees, pull the bar to the lower ribs, no body swing.
+pendlay|Pendlay Row|Back|Barbell|Torso parallel to the floor, bar resets on the floor each rep, explosive pull.
+tbar|T-Bar Row|Back|Machine|Chest on the pad if available, pull elbows back and squeeze the shoulder blades.
+dbrow|One-Arm Dumbbell Row|Back|Dumbbell|Hand and knee on a bench, pull the weight toward your hip, not your shoulder.
+chestrow|Chest-Supported Row|Back|Machine|Chest on the pad, pull elbows back, pause and squeeze.
+cablerow|Seated Cable Row|Back|Cable|Sit tall, pull the handle to the stomach, keep shoulders down.
+pullup|Pull-Up|Back|Bodyweight|Start from a dead hang, pull chest to the bar, control the way down.
+chinup|Chin-Up|Back|Bodyweight|Underhand grip, shoulder width. Pull chin over the bar without kipping.
+assistpu|Assisted Pull-Up|Back|Machine|Pick weight that allows full range. Pull elbows to your sides.
+latpd|Lat Pulldown|Back|Cable|Lean back slightly, pull the bar to the upper chest, elbows down and in.
+straightarm|Straight-Arm Pulldown|Back|Cable|Arms nearly straight, sweep the bar to your thighs using the lats.
+invrow|Inverted Row|Back|Bodyweight|Body straight under a bar, pull chest to the bar, squeeze the shoulder blades.
+shrug|Barbell Shrug|Back|Barbell|Lift shoulders straight up toward ears, hold, lower slowly. No rolling.
+dbshrug|Dumbbell Shrug|Back|Dumbbell|Stand tall, shrug up and pause at the top.
+hyper|Back Extension|Back|Bodyweight|Hinge at the hips, neutral spine, stop when your body forms a straight line.
+squat|Squat|Legs|Barbell|Bar on upper back, brace, sit between your hips to depth, drive up through mid-foot.
+frontsquat|Front Squat|Legs|Barbell|Elbows high, upright torso, sit straight down.
+smithsquat|Smith Machine Squat|Legs|Smith Machine|Feet slightly forward, sit back and down, keep heels flat.
+goblet|Goblet Squat|Legs|Kettlebell|Hold the weight at the chest, elbows inside knees at the bottom.
+bwsquat|Bodyweight Squat|Legs|Bodyweight|Feet shoulder width, sit back and down, chest tall.
+hacksquat|Hack Squat|Legs|Machine|Feet shoulder width, lower under control, do not lock the knees hard.
+legpress|Leg Press|Legs|Machine|Lower until knees reach about 90 degrees without the lower back lifting.
+bulgarian|Bulgarian Split Squat|Legs|Dumbbell|Rear foot on a bench, drop straight down, front knee tracks over toes.
+lunge|Walking Lunge|Legs|Dumbbell|Long step, drop the back knee toward the floor, push through the front heel.
+revlunge|Reverse Lunge|Legs|Dumbbell|Step back, lower straight down, drive through the front foot.
+stepup|Step-Up|Legs|Dumbbell|Whole foot on the box, stand fully, lower slowly.
+rdl|Romanian Deadlift|Legs|Barbell|Soft knees, push hips back, bar close to legs, feel the hamstring stretch.
+dbrdl|Dumbbell Romanian Deadlift|Legs|Dumbbell|Hinge with a flat back until the hamstrings stretch, then stand tall.
+goodmorning|Good Morning|Legs|Barbell|Bar on back, hinge forward with a flat back, return by driving hips forward.
+legcurl|Leg Curl|Legs|Machine|Hips down, curl heels toward glutes, control the return.
+legext|Leg Extension|Legs|Machine|Extend fully, squeeze the quads at the top, lower slowly.
+nordic|Nordic Hamstring Curl|Legs|Bodyweight|Anchor your heels, lower as slowly as possible, catch yourself with the hands.
+hipthrust|Hip Thrust|Legs|Barbell|Upper back on a bench, chin tucked, drive through heels and squeeze at the top.
+glutebridge|Glute Bridge|Legs|Bodyweight|Lie on your back, drive hips up, ribs down, squeeze the glutes.
+cablekick|Cable Glute Kickback|Legs|Cable|Kick back and slightly up without arching the lower back.
+abductor|Hip Abduction Machine|Legs|Machine|Sit tall, push knees out against the pads, pause at the end.
+adductor|Hip Adduction Machine|Legs|Machine|Squeeze the pads together under control, avoid slamming the weight.
+calf|Calf Raise|Legs|Machine|Full stretch at the bottom, rise to your toes, pause at the top.
+seatedcalf|Seated Calf Raise|Legs|Machine|Knees at 90 degrees, full stretch, slow squeeze at the top.
+kbswing|Kettlebell Swing|Legs|Kettlebell|Hinge, snap the hips forward, let the bell float to chest height.
+ohp|Overhead Press|Shoulders|Barbell|Squeeze glutes, press the bar up past your face, finish with the head through.
+dbpress|Dumbbell Shoulder Press|Shoulders|Dumbbell|Press up and slightly in. Do not arch the lower back.
+arnold|Arnold Press|Shoulders|Dumbbell|Start palms facing you, rotate out as you press overhead.
+machinepress|Machine Shoulder Press|Shoulders|Machine|Seat so handles start at ear height, press without shrugging.
+pushpress|Push Press|Shoulders|Barbell|Dip and drive with the legs, finish the press with the shoulders.
+landmine|Landmine Press|Shoulders|Barbell|Press up and forward in an arc, keep ribs down.
+lateral|Lateral Raise|Shoulders|Dumbbell|Lead with the elbows, raise to shoulder height, lower slowly.
+cablelateral|Cable Lateral Raise|Shoulders|Cable|Cable at the low position, raise out to the side, steady tension.
+frontraise|Front Raise|Shoulders|Dumbbell|Raise to eye level with straight arms, no swinging.
+revfly|Reverse Fly|Shoulders|Dumbbell|Hinge forward, open arms wide, squeeze the rear delts.
+reardelt|Rear Delt Machine Fly|Shoulders|Machine|Chest on the pad, sweep arms back, pause at the end.
+facepull|Face Pull|Shoulders|Cable|Pull the rope to your face, elbows high, rotate hands apart.
+uprightrow|Upright Row|Shoulders|Barbell|Pull to lower chest with elbows leading, wide grip to spare the wrists.
+curl|Barbell Curl|Biceps|Barbell|Elbows pinned at your sides, curl to the shoulders, lower slowly.
+ezcurl|EZ-Bar Curl|Biceps|EZ Bar|Angled grip eases the wrists. Keep elbows still.
+dbcurl|Dumbbell Curl|Biceps|Dumbbell|Turn the palms up as you curl, no swinging.
+inclinecurl|Incline Dumbbell Curl|Biceps|Dumbbell|Arms hang back on an incline for a deep stretch, curl without moving the elbows.
+hammer|Hammer Curl|Biceps|Dumbbell|Neutral grip, curl to the shoulder, elbows by your sides.
+preacher|Preacher Curl|Biceps|EZ Bar|Upper arms on the pad, lower to near-straight, no bounce.
+cablecurl|Cable Curl|Biceps|Cable|Constant tension. Curl up and squeeze, keep the elbows fixed.
+concentration|Concentration Curl|Biceps|Dumbbell|Elbow against the inner thigh, curl slowly, squeeze at the top.
+reversecurl|Reverse Curl|Biceps|EZ Bar|Overhand grip, curl up with the wrists straight. Works forearms too.
+wristcurl|Wrist Curl|Biceps|Dumbbell|Forearms on a bench, curl the weight up with the wrists only.
+pushdown|Triceps Pushdown|Triceps|Cable|Elbows at your sides, push down to full extension, control the way up.
+ropepd|Rope Pushdown|Triceps|Cable|Spread the rope at the bottom, keep the upper arms still.
+skull|Skull Crusher|Triceps|EZ Bar|Lower the bar toward the forehead, elbows pointing up, extend fully.
+closegrip|Close-Grip Bench Press|Triceps|Barbell|Hands shoulder width, elbows tucked, press with the triceps.
+ohext|Overhead Triceps Extension|Triceps|Dumbbell|Elbows close to the head, lower behind it, extend to the top.
+cableohext|Cable Overhead Extension|Triceps|Cable|Face away from the stack, extend overhead and squeeze.
+kickback|Triceps Kickback|Triceps|Dumbbell|Upper arm parallel to the floor, extend the elbow fully.
+benchdip|Bench Dip|Triceps|Bodyweight|Hands on a bench behind you, lower until elbows reach 90 degrees.
+diamond|Diamond Push-Up|Triceps|Bodyweight|Hands close under the chest, elbows brush your sides.
+legraise|Hanging Leg Raise|Core|Bodyweight|Hang from a bar, curl the pelvis up as the legs rise, no swinging.
+kneeraise|Hanging Knee Raise|Core|Bodyweight|Lift the knees to your chest, tilt the pelvis up, lower slowly.
+crunch|Cable Crunch|Core|Cable|Kneel, curl your ribs to your pelvis, hips stay still.
+machinecrunch|Ab Crunch Machine|Core|Machine|Curl forward from the abs, exhale at the bottom.
+situp|Sit-Up|Core|Bodyweight|Feet anchored, curl up with control, avoid pulling on the neck.
+plank|Plank|Core|Bodyweight|Body in a straight line, ribs down, squeeze glutes. Log time as reps.
+abwheel|Ab Wheel Rollout|Core|Other|Roll out only as far as you can keep the lower back flat.
+russian|Russian Twist|Core|Bodyweight|Lean back slightly, rotate the torso, not just the arms.
+deadbug|Dead Bug|Core|Bodyweight|Lower back pressed to the floor, move opposite arm and leg slowly.
+bicycle|Bicycle Crunch|Core|Bodyweight|Elbow to opposite knee, slow and controlled.
+pallof|Pallof Press|Core|Cable|Press straight out and resist the rotation, keep hips square.
+woodchop|Cable Woodchop|Core|Cable|Rotate from the torso, arms stay long, pivot the back foot.
+mountain|Mountain Climber|Core|Bodyweight|Shoulders over the hands, drive knees in quickly, hips low.
+vup|V-Up|Core|Bodyweight|Raise legs and torso together, touch your toes, lower under control.
+burpee|Burpee|Other|Bodyweight|Chest to the floor, explode up into a jump, land soft.
+thruster|Thruster|Other|Barbell|Front squat straight into an overhead press in one motion.
+powerclean|Power Clean|Other|Barbell|Jump the bar up, pull under it, catch on the shoulders.
+farmer|Farmer's Carry|Other|Dumbbell|Stand tall, shoulders back, walk with short steady steps.
+sledpush|Sled Push|Other|Other|Low hips, drive with the legs, keep arms locked.
+boxjump|Box Jump|Other|Bodyweight|Swing the arms, land softly on the whole foot, step down.
+battleropes|Battle Ropes|Other|Other|Brace the core and make fast alternating waves.
+jumprope|Jump Rope|Other|Other|Small hops on the balls of the feet, wrists turn the rope.
+rower|Rowing Machine|Other|Machine|Legs, then back, then arms. Reverse on the way back.
+bike|Stationary Bike|Other|Machine|Seat at hip height, smooth pedal strokes.
+`.trim().split('\n').map((l) => l.split('|'));
+const DEFAULT_EX = EX_DATA.map(([id, name, muscle, equipment, cue]) => ({ id, name, muscle, equipment, cue, custom: false }));
+const DEF_BY_ID = Object.fromEntries(DEFAULT_EX.map((e) => [e.id, e]));
+const mergeEx = (list) => {
+  const have = new Set(list.map((e) => e.id));
+  const out = list.map((e) => (DEF_BY_ID[e.id] && !e.custom ? { ...e, equipment: e.equipment || DEF_BY_ID[e.id].equipment, cue: e.cue || DEF_BY_ID[e.id].cue } : e));
+  return [...out, ...DEFAULT_EX.filter((e) => !have.has(e.id))];
+};
+const EQUIP = [...new Set(DEFAULT_EX.map((e) => e.equipment))].sort();
+const EDB_HOST = 'edb-with-videos-and-images-by-ascendapi.p.rapidapi.com';
+const titleCase = (t) => String(t || '').replace(/\w\S*/g, (w) => w[0].toUpperCase() + w.slice(1).toLowerCase());
+function edbMuscle(x) {
+  const t = ((x.bodyParts || []).join(' ') + ' ' + (x.targetMuscles || []).join(' ')).toLowerCase();
+  const has = (re) => re.test(t);
+  return has(/tricep/) ? 'Triceps' : has(/bicep|forearm|brachial/) ? 'Biceps' : has(/chest|pector/) ? 'Chest' : has(/shoulder|delt/) ? 'Shoulders'
+    : has(/back|\blat|trapez|rhomboid|spine|erector/) ? 'Back' : has(/leg|thigh|quad|hamstring|glute|calf|calves|hip|adductor|abductor/) ? 'Legs'
+    : has(/waist|\babs\b|abdom|oblique|core/) ? 'Core' : 'Other';
+}
+const edbToEx = (x) => ({ id: 'edb_' + x.exerciseId, name: titleCase(x.name), muscle: edbMuscle(x), equipment: titleCase((x.equipments || [])[0] || 'Other'), target: (x.targetMuscles || []).map(titleCase), secondary: (x.secondaryMuscles || []).map(titleCase), imageUrl: x.imageUrl || '', custom: false, source: 'exercisedb' });
 
 const ROUT = {
   Push: [['bench', 60, 72.5], ['ohp', 40, 47.5], ['incline', 22, 28], ['lateral', 8, 11], ['pushdown', 25, 32.5]],
@@ -165,7 +288,7 @@ function loadDb() {
     if (raw) {
       const d = JSON.parse(raw);
       if (d && Array.isArray(d.exercises) && Array.isArray(d.workouts)) {
-        return { templates: [], runs: [], activeRun: null, active: null, rest: null, ...d, settings: { unit: 'kg', dist: 'km', rest: 90, goal: 4, ...(d.settings || {}) } };
+        return { templates: [], runs: [], activeRun: null, active: null, rest: null, ...d, exercises: mergeEx(d.exercises), settings: { unit: 'kg', dist: 'km', rest: 90, goal: 4, ...(d.settings || {}) } };
       }
     }
   } catch (e) {}
@@ -214,8 +337,8 @@ const Empty = ({ icon: I, title, text, children }) => (
 
 function PageHeader({ title, sub, right, onSettings }) {
   return (
-    <div className="flex items-start justify-between gap-3 mb-5">
-      <div className="min-w-0">
+    <div className="flex items-start justify-between gap-x-3 gap-y-3 mb-5 flex-wrap">
+      <div className="min-w-0 shrink-0 max-w-full">
         <h1 className="disp text-4xl font-semibold leading-none">{title}</h1>
         {sub && <p className="text-mute mt-1.5 text-sm">{sub}</p>}
       </div>
@@ -403,7 +526,7 @@ const Tile = ({ label, value, sub, subTone }) => (
 function ExercisePicker({ exercises, onClose, onAdd, onCreate }) {
   const [q, setQ] = useState(''); const [mu, setMu] = useState('All'); const [sel, setSel] = useState([]);
   const [creating, setCreating] = useState(false); const [nn, setNn] = useState(''); const [nm, setNm] = useState('Chest');
-  const list = exercises.filter((e) => (mu === 'All' || e.muscle === mu) && e.name.toLowerCase().includes(q.toLowerCase()));
+  const list = exercises.filter((e) => (mu === 'All' || e.muscle === mu) && (e.name + ' ' + (e.equipment || '')).toLowerCase().includes(q.toLowerCase()));
   const toggle = (id) => setSel((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
   const create = () => { if (!nn.trim()) return; const ex = { id: uid(), name: nn.trim(), muscle: nm, custom: true }; onCreate(ex); setSel((s) => [...s, ex.id]); setNn(''); setCreating(false); };
   return (
@@ -415,7 +538,7 @@ function ExercisePicker({ exercises, onClose, onAdd, onCreate }) {
       <div className="mt-2 divide-y divide-line">
         {list.map((e) => (
           <button key={e.id} onClick={() => toggle(e.id)} className="w-full flex items-center justify-between py-2.5 text-left">
-            <span><span className="font-medium">{e.name}</span> <span className="text-xs text-faint ml-1.5">{e.muscle}{e.custom ? ' · custom' : ''}</span></span>
+            <span><span className="font-medium">{e.name}</span> <span className="text-xs text-faint ml-1.5">{e.muscle}{e.equipment ? ' · ' + e.equipment : ''}{e.custom ? ' · custom' : ''}</span></span>
             <span className={'h-6 w-6 rounded-md grid place-items-center border ' + (sel.includes(e.id) ? 'bg-accent border-accent text-[#1a0d05]' : 'border-line text-transparent')}><Check size={15} /></span>
           </button>
         ))}
@@ -919,22 +1042,79 @@ function PlanView({ db, ctx }) {
   );
 }
 
+function ExerciseSheet({ e, s, unit, onClose, onProgress }) {
+  return (
+    <Sheet title={e.name} onClose={onClose}>
+      <div className="flex flex-wrap gap-1.5 mb-3"><Pill>{e.muscle}</Pill>{e.equipment && <Pill>{e.equipment}</Pill>}{e.source && <Pill className="!text-steel">ExerciseDB</Pill>}{e.custom && <Pill className="!text-steel">custom</Pill>}</div>
+      {e.imageUrl && <img src={e.imageUrl} alt={e.name} className="w-full rounded-xl mb-3 bg-surf2" onError={(ev) => { ev.currentTarget.style.display = 'none'; }} />}
+      {e.cue && <p className="text-[15px]">{e.cue}</p>}
+      {e.target && e.target.length > 0 && <p className="text-sm text-mute mt-3"><span className="text-ink">Primary:</span> {e.target.join(', ')}</p>}
+      {e.secondary && e.secondary.length > 0 && <p className="text-sm text-mute mt-1"><span className="text-ink">Secondary:</span> {e.secondary.join(', ')}</p>}
+      <div className="mt-4 rounded-xl bg-surf2 border border-line p-3 text-sm num">{s ? `Best est. 1RM ${Math.round(s.best)} ${unit} · ${s.n} session${s.n > 1 ? 's' : ''} · last ${relDate(s.last)}` : 'Not logged yet.'}</div>
+      {s && <button className={btnPrimary + ' w-full mt-3'} onClick={onProgress}><TrendingUp size={17} /> View progress</button>}
+    </Sheet>
+  );
+}
+
+function ImportSheet({ existing, onClose, onImport }) {
+  const [key, setKey] = useState(() => { try { return localStorage.getItem('setlog.edbkey') || ''; } catch (e) { return ''; } });
+  const [q, setQ] = useState(''); const [res, setRes] = useState(null); const [busy, setBusy] = useState(false); const [err, setErr] = useState(''); const [sel, setSel] = useState([]);
+  const have = new Set(existing.map((e) => e.id));
+  const search = async () => {
+    if (!key.trim() || !q.trim()) return;
+    setBusy(true); setErr(''); setSel([]);
+    try { localStorage.setItem('setlog.edbkey', key.trim()); } catch (e) {}
+    try {
+      const r = await fetch(`https://${EDB_HOST}/api/v1/exercises?name=${encodeURIComponent(q.trim())}&limit=25`, { headers: { 'x-rapidapi-key': key.trim(), 'x-rapidapi-host': EDB_HOST } });
+      if (!r.ok) throw new Error(r.status === 401 || r.status === 403 ? 'ExerciseDB rejected that key.' : r.status === 429 ? 'Request limit reached for this plan.' : `ExerciseDB returned an error (${r.status}).`);
+      const j = await r.json(); setRes(j.data || []);
+    } catch (e) { setRes(null); setErr(e instanceof TypeError ? 'Could not reach ExerciseDB. Importing works in the hosted app, not inside the Claude artifact viewer.' : e.message); }
+    setBusy(false);
+  };
+  const toggle = (id) => setSel((x) => (x.includes(id) ? x.filter((i) => i !== id) : [...x, id]));
+  return (
+    <Sheet title="Import from ExerciseDB" onClose={onClose} wide>
+      <p className="text-sm text-mute mb-3">Search the ExerciseDB library and add exercises to yours. You need a RapidAPI key for ExerciseDB (the free plan works). Each search uses one request.</p>
+      <label htmlFor="edb-key" className="text-[11px] uppercase tracking-wider text-mute">RapidAPI key</label>
+      <input id="edb-key" type="password" autoComplete="off" className={inputCls + ' mt-1 mb-1'} value={key} onChange={(e) => setKey(e.target.value)} placeholder="Paste your key" />
+      <p className="text-xs text-faint mb-3">Saved only in this browser. Anyone using this browser profile can see it.</p>
+      <div className="flex gap-2"><input id="edb-q" aria-label="Search ExerciseDB" className={inputCls} value={q} placeholder="e.g. cable fly" onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && search()} /><button className={btnPrimary} disabled={busy || !key.trim() || !q.trim()} onClick={search}>{busy ? '…' : 'Search'}</button></div>
+      {err && <p className="text-sm text-red-300 mt-3">{err}</p>}
+      {res && !res.length && <p className="text-sm text-mute mt-3">No results.</p>}
+      {res && res.length > 0 && (
+        <div className="mt-3 divide-y divide-line">{res.map((x) => {
+          const id = 'edb_' + x.exerciseId, added = have.has(id);
+          return (
+            <button key={x.exerciseId} disabled={added} onClick={() => toggle(id)} className="w-full flex items-center justify-between gap-3 py-2.5 text-left disabled:opacity-50">
+              <span className="min-w-0"><span className="font-medium">{titleCase(x.name)}</span><span className="block text-xs text-faint truncate">{edbMuscle(x)} · {titleCase((x.equipments || [])[0] || 'Other')}</span></span>
+              {added ? <span className="text-xs text-mute">Added</span> : <span className={'h-6 w-6 shrink-0 rounded-md grid place-items-center border ' + (sel.includes(id) ? 'bg-accent border-accent text-[#1a0d05]' : 'border-line text-transparent')}><Check size={15} /></span>}
+            </button>
+          );
+        })}</div>
+      )}
+      <div className="sticky bottom-0 pt-3 mt-3 bg-surf"><button className={btnPrimary + ' w-full'} disabled={!sel.length} onClick={() => { onImport((res || []).filter((x) => sel.includes('edb_' + x.exerciseId)).map(edbToEx)); onClose(); }}>Import {sel.length || ''} exercise{sel.length === 1 ? '' : 's'}</button></div>
+      <p className="text-xs text-faint mt-3">Exercise data from ExerciseDB (exercisedb.dev).</p>
+    </Sheet>
+  );
+}
+
 /* ---------- exercise database ---------- */
 function ExercisesView({ db, ctx }) {
   const { exercises, workouts } = db; const unit = db.settings.unit;
   const [q, setQ] = useState(''); const [mu, setMu] = useState('All'); const [adding, setAdding] = useState(false);
   const [nn, setNn] = useState(''); const [nm, setNm] = useState('Chest'); const [del, setDel] = useState(null);
+  const [eq, setEq] = useState('All'); const [detail, setDetail] = useState(null); const [importing, setImporting] = useState(false);
   const stats = useMemo(() => {
     const s = {};
     sortedW(workouts).forEach((w) => w.items.forEach((it) => { const e = s[it.exerciseId] || (s[it.exerciseId] = { n: 0, best: 0, last: 0 }); e.n++; e.last = w.start; it.sets.forEach((x) => { e.best = Math.max(e.best, e1rm(x.weight, x.reps)); }); }));
     return s;
   }, [workouts]);
-  const list = exercises.filter((e) => (mu === 'All' || e.muscle === mu) && e.name.toLowerCase().includes(q.toLowerCase()));
+  const list = exercises.filter((e) => (mu === 'All' || e.muscle === mu) && (eq === 'All' || e.equipment === eq) && e.name.toLowerCase().includes(q.toLowerCase()));
   const groups = MUSCLES.map((m) => [m, list.filter((e) => e.muscle === m).sort((a, b) => a.name.localeCompare(b.name))]).filter(([, l]) => l.length);
   const create = () => { if (!nn.trim()) return; ctx.addExercise({ id: uid(), name: nn.trim(), muscle: nm, custom: true }); setNn(''); setAdding(false); };
   return (
     <div>
-      <PageHeader title="Exercises" sub={`${exercises.length} in your database`} onSettings={() => ctx.setModal({ type: 'settings' })} right={<button className={btnPrimary} onClick={() => setAdding(!adding)}><Plus size={18} /> Custom</button>} />
+      <PageHeader title="Exercises" sub={`${exercises.length} in your database`} onSettings={() => ctx.setModal({ type: 'settings' })} right={<><button className={btnGhost + ' !py-2'} onClick={() => setImporting(true)}>Import</button><button className={btnPrimary} onClick={() => setAdding(!adding)}><Plus size={18} /> Custom</button></>} />
       {adding && (
         <Card className="p-4 mb-4 grid gap-2 pop">
           <label htmlFor="ex-new" className="text-[11px] uppercase tracking-wider text-mute">New exercise</label>
@@ -943,7 +1123,7 @@ function ExercisesView({ db, ctx }) {
           <div className="flex gap-2"><button className={btnPrimary + ' flex-1'} onClick={create}>Add to database</button><button className={btnGhost} onClick={() => setAdding(false)}>Cancel</button></div>
         </Card>
       )}
-      <div className="relative mb-3"><Search size={16} className="absolute left-3 top-3 text-faint" /><input id="ex-q" aria-label="Search exercises" className={inputCls + ' pl-9'} placeholder="Search exercises" value={q} onChange={(e) => setQ(e.target.value)} /></div>
+      <div className="flex gap-2 mb-3"><div className="relative flex-1 min-w-0"><Search size={16} className="absolute left-3 top-3 text-faint" /><input id="ex-q" aria-label="Search exercises" className={inputCls + ' pl-9'} placeholder="Search exercises" value={q} onChange={(e) => setQ(e.target.value)} /></div><select id="ex-eq" aria-label="Equipment" className="rounded-lg bg-surf2 border border-line px-2.5 text-sm" value={eq} onChange={(e) => setEq(e.target.value)}><option value="All">All equipment</option>{[...new Set([...EQUIP, ...exercises.map((x) => x.equipment).filter(Boolean)])].sort().map((x) => <option key={x}>{x}</option>)}</select></div>
       <div className="flex gap-1.5 overflow-x-auto pb-3">{['All', ...MUSCLES].map((m) => <button key={m} onClick={() => setMu(m)} className={'shrink-0 rounded-full px-3 py-1 text-sm border ' + (mu === m ? 'bg-accent border-accent text-[#1a0d05] font-semibold' : 'bg-surf border-line text-mute')}>{m}</button>)}</div>
       {groups.map(([m, l]) => (
         <div key={m} className="mb-4">
@@ -953,12 +1133,12 @@ function ExercisesView({ db, ctx }) {
               const s = stats[e.id];
               return (
                 <div key={e.id} className="flex items-center gap-2 pr-2">
-                  <button onClick={() => s && ctx.openProgress(e.id)} className="flex-1 min-w-0 text-left px-4 py-3">
+                  <button onClick={() => setDetail(e)} className="flex-1 min-w-0 text-left px-4 py-3">
                     <div className="font-medium truncate">{e.name}{e.custom && <span className="ml-2 text-[10px] uppercase tracking-wider text-steel">custom</span>}</div>
-                    <div className="text-xs text-mute num">{s ? `Best est. 1RM ${Math.round(s.best)} ${unit} · ${s.n} session${s.n > 1 ? 's' : ''} · ${relDate(s.last)}` : 'Not logged yet'}</div>
+                    <div className="text-xs text-mute num">{e.equipment ? e.equipment + ' · ' : ''}{s ? `Best est. 1RM ${Math.round(s.best)} ${unit} · ${s.n} session${s.n > 1 ? 's' : ''} · ${relDate(s.last)}` : 'Not logged yet'}</div>
                   </button>
                   {s && <TrendingUp size={16} className="text-faint shrink-0" />}
-                  {e.custom && (del === e.id ? <button className="rounded-lg bg-red-500/90 text-white text-sm px-2.5 py-1.5" onClick={() => { ctx.deleteExercise(e.id); setDel(null); }}>Delete?</button>
+                  {(e.custom || e.source) && (del === e.id ? <button className="rounded-lg bg-red-500/90 text-white text-sm px-2.5 py-1.5" onClick={() => { ctx.deleteExercise(e.id); setDel(null); }}>Delete?</button>
                     : <button aria-label={'Delete ' + e.name} className="h-8 w-8 grid place-items-center text-faint hover:text-red-400" onClick={() => { setDel(e.id); setTimeout(() => setDel(null), 3000); }}><Trash2 size={15} /></button>)}
                 </div>
               );
@@ -967,6 +1147,8 @@ function ExercisesView({ db, ctx }) {
         </div>
       ))}
       {!groups.length && <Card><Empty icon={Search} title="No exercises match" text="Try a different search, or add it as a custom exercise." /></Card>}
+      {detail && <ExerciseSheet e={detail} s={stats[detail.id]} unit={unit} onClose={() => setDetail(null)} onProgress={() => { setDetail(null); ctx.openProgress(detail.id); }} />}
+      {importing && <ImportSheet existing={exercises} onClose={() => setImporting(false)} onImport={ctx.importExercises} />}
     </div>
   );
 }
@@ -1095,7 +1277,7 @@ function SettingsSheet({ db, ctx, onClose }) {
     <div className="inline-flex items-center gap-2"><button aria-label="Decrease" className="h-9 w-9 rounded-lg bg-surf2 border border-line grid place-items-center" onClick={() => onChange(Math.max(min, value - step))}><Minus size={15} /></button><span className="w-16 text-center num font-semibold">{fmt ? fmt(value) : value}</span><button aria-label="Increase" className="h-9 w-9 rounded-lg bg-surf2 border border-line grid place-items-center" onClick={() => onChange(Math.min(max, value + step))}><Plus size={15} /></button></div>
   );
   const copy = async () => { const json = JSON.stringify(db); try { await navigator.clipboard.writeText(json); setMsg('Backup copied. Paste it somewhere safe.'); } catch (e) { setTxt(json); setMsg('Copy blocked here. Select the text below and copy it manually.'); } };
-  const restore = () => { try { const d = JSON.parse(txt); if (!Array.isArray(d.exercises) || !Array.isArray(d.workouts)) throw 0; ctx.setDb({ templates: [], runs: [], activeRun: null, active: null, rest: null, ...d, settings: { unit: 'kg', dist: 'km', rest: 90, goal: 4, ...(d.settings || {}) } }); setMsg('Backup restored.'); setTxt(''); } catch (e) { setMsg('That text is not a valid Setlog backup.'); } };
+  const restore = () => { try { const d = JSON.parse(txt); if (!Array.isArray(d.exercises) || !Array.isArray(d.workouts)) throw 0; ctx.setDb({ templates: [], runs: [], activeRun: null, active: null, rest: null, ...d, exercises: mergeEx(d.exercises), settings: { unit: 'kg', dist: 'km', rest: 90, goal: 4, ...(d.settings || {}) } }); setMsg('Backup restored.'); setTxt(''); } catch (e) { setMsg('That text is not a valid Setlog backup.'); } };
   return (
     <Sheet title="Settings" onClose={onClose}>
       <div className="grid gap-4">
@@ -1146,6 +1328,7 @@ function App() {
     openHistory: (id) => { setFocus({ histId: id }); setView('progress'); },
     openProgress: (exId) => { setFocus({ exId }); setView('progress'); },
     addExercise: (ex) => setDb((d) => ({ ...d, exercises: [...d.exercises, ex] })),
+    importExercises: (list) => setDb((d) => ({ ...d, exercises: [...d.exercises, ...list.filter((x) => !d.exercises.some((e) => e.id === x.id))] })),
     deleteExercise: (id) => setDb((d) => ({ ...d, exercises: d.exercises.filter((e) => e.id !== id) })),
     startRest: () => setDb((d) => (d.settings.rest > 0 ? { ...d, rest: { end: Date.now() + d.settings.rest * 1000, total: d.settings.rest * 1000 } } : d)),
     startWorkout: (tpl) => {
