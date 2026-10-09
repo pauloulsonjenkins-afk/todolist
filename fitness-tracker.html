@@ -1,0 +1,996 @@
+<title>Setlog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* Layout: sidebar + content on desktop, bottom tab bar on phones. Dark graphite surfaces, ember orange for effort, steel blue for strength lines. */
+  :root {
+    --bg: #101217; --surf: #171a21; --surf2: #1e222b; --line: #2a2f3b;
+    --ink: #eceff4; --mute: #9ba3b2; --faint: #687080;
+    --accent: #ff7a3d; --steel: #4cc2ff; --ok: #4ade80;
+    color-scheme: dark;
+  }
+  html, body { background: var(--bg); color: var(--ink); }
+  body { font-family: Barlow, system-ui, sans-serif; font-size: 16px; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+  input, select, button, textarea { font: inherit; color: inherit; }
+  input, textarea, select { color-scheme: dark; }
+  button { cursor: pointer; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .num { font-variant-numeric: tabular-nums; }
+  .disp { font-family: "Barlow Condensed", Barlow, sans-serif; letter-spacing: .01em; }
+  input[type=number]::-webkit-inner-spin-button { display: none; }
+  ::-webkit-scrollbar { width: 8px; height: 8px; } ::-webkit-scrollbar-thumb { background: var(--line); border-radius: 8px; }
+  @keyframes pop { from { transform: translateY(12px); opacity: 0 } to { transform: none; opacity: 1 } }
+  .pop { animation: pop .18s ease-out; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-4px)} 75%{transform:translateX(4px)} }
+  .shake { animation: shake .25s; }
+  @media (prefers-reduced-motion: reduce) { .pop, .shake { animation: none; } * { transition: none !important; } }
+</style>
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<script>
+  tailwind.config = { theme: { extend: {
+    colors: { bg:'#101217', surf:'#171a21', surf2:'#1e222b', line:'#2a2f3b', ink:'#eceff4', mute:'#9ba3b2', faint:'#687080', accent:'#ff7a3d', steel:'#4cc2ff', ok:'#4ade80' },
+    fontFamily: { display:['"Barlow Condensed"','Barlow','sans-serif'], sans:['Barlow','system-ui','sans-serif'] }
+  } } };
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script>window.react = window.React;</script>
+<script src="https://unpkg.com/lucide-react@0.263.1/dist/umd/lucide-react.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useEffect, useMemo, useRef } = React;
+const LR = window.lucideReact || window.LucideReact || {};
+const ic = (n) => LR[n] || (() => null);
+const [Dumbbell, LayoutDashboard, Play, Plus, Trash2, Check, X, Timer, Clock, Flame, TrendingUp, ClipboardList, ListChecks, Search, Settings, Pencil, Copy, Trophy, Minus, SkipForward, ChevronDown, ChevronUp, CalendarDays, Save, History, BarChart3, ArrowUp, ArrowDown, Sparkles] =
+  ['Dumbbell','LayoutDashboard','Play','Plus','Trash2','Check','X','Timer','Clock','Flame','TrendingUp','ClipboardList','ListChecks','Search','Settings','Pencil','Copy','Trophy','Minus','SkipForward','ChevronDown','ChevronUp','CalendarDays','Save','History','BarChart3','ArrowUp','ArrowDown','Sparkles'].map(ic);
+
+/* ---------- helpers ---------- */
+const DAY = 864e5;
+const uid = () => Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-4);
+const startOfDay = (d) => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; };
+const startOfWeek = (d) => { const x = startOfDay(d); x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); return x; };
+const dayKey = (d) => { const x = new Date(d); return x.getFullYear() + '-' + String(x.getMonth() + 1).padStart(2, '0') + '-' + String(x.getDate()).padStart(2, '0'); };
+const fmtNum = (n) => Math.round(n).toLocaleString();
+const compact = (n) => Math.abs(n) >= 1000 ? (n / 1000).toFixed(n % 1000 === 0 ? 0 : 1).replace(/\.0$/, '') + 'k' : String(Math.round(n * 10) / 10);
+const fmtShort = (d) => new Date(d).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+const fmtDate = (d) => new Date(d).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+const relDate = (ts) => {
+  const diff = Math.round((startOfDay(Date.now()) - startOfDay(ts)) / DAY);
+  return diff === 0 ? 'Today' : diff === 1 ? 'Yesterday' : fmtDate(ts);
+};
+const fmtClock = (sec) => { sec = Math.max(0, Math.floor(sec)); const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60; return (h ? h + ':' + String(m).padStart(2, '0') : m) + ':' + String(s).padStart(2, '0'); };
+const fmtMin = (min) => { min = Math.round(min); return min >= 60 ? Math.floor(min / 60) + 'h ' + (min % 60) + 'm' : min + 'm'; };
+const e1rm = (w, r) => { w = +w || 0; r = +r || 0; return w <= 0 || r <= 0 ? 0 : r === 1 ? w : w * (1 + r / 30); };
+const setVol = (s) => (+s.weight || 0) * (+s.reps || 0);
+const workoutVolume = (w) => w.items.reduce((a, it) => a + it.sets.filter((s) => s.done).reduce((b, s) => b + setVol(s), 0), 0);
+const workoutSets = (w) => w.items.reduce((a, it) => a + it.sets.filter((s) => s.done).length, 0);
+const bestE1rm = (workouts, exId) => { let b = 0; workouts.forEach((w) => w.items.forEach((it) => { if (it.exerciseId === exId) it.sets.forEach((s) => { b = Math.max(b, e1rm(s.weight, s.reps)); }); })); return b; };
+const lastPerf = (workouts, exId) => { for (let i = workouts.length - 1; i >= 0; i--) { const it = workouts[i].items.find((x) => x.exerciseId === exId); if (it && it.sets.length) return it.sets; } return null; };
+const sortedW = (ws) => [...ws].sort((a, b) => a.start - b.start);
+const MUSCLES = ['Chest', 'Back', 'Legs', 'Shoulders', 'Biceps', 'Triceps', 'Core'];
+
+function niceTicks(min, max, count = 4) {
+  if (max <= min) max = min + 1;
+  const step0 = (max - min) / count, mag = Math.pow(10, Math.floor(Math.log10(step0))), norm = step0 / mag;
+  const step = (norm <= 1 ? 1 : norm <= 2 ? 2 : norm <= 2.5 ? 2.5 : norm <= 5 ? 5 : 10) * mag;
+  const lo = Math.floor(min / step) * step, hi = Math.ceil(max / step) * step, t = [];
+  for (let v = lo; v <= hi + 1e-9; v += step) t.push(+v.toFixed(6));
+  return t;
+}
+
+/* ---------- seed data ---------- */
+const DEFAULT_EX = [
+  ['bench','Bench Press','Chest'],['incline','Incline Dumbbell Press','Chest'],['fly','Chest Fly','Chest'],['pushup','Push-Up','Chest'],['dips','Dips','Chest'],
+  ['deadlift','Deadlift','Back'],['row','Barbell Row','Back'],['pullup','Pull-Up','Back'],['latpd','Lat Pulldown','Back'],['cablerow','Seated Cable Row','Back'],
+  ['squat','Squat','Legs'],['rdl','Romanian Deadlift','Legs'],['legpress','Leg Press','Legs'],['lunge','Walking Lunge','Legs'],['legcurl','Leg Curl','Legs'],['calf','Calf Raise','Legs'],['hipthrust','Hip Thrust','Legs'],
+  ['ohp','Overhead Press','Shoulders'],['lateral','Lateral Raise','Shoulders'],['facepull','Face Pull','Shoulders'],
+  ['curl','Barbell Curl','Biceps'],['hammer','Hammer Curl','Biceps'],
+  ['pushdown','Triceps Pushdown','Triceps'],['skull','Skull Crusher','Triceps'],
+  ['legraise','Hanging Leg Raise','Core'],['crunch','Cable Crunch','Core'],
+].map(([id, name, muscle]) => ({ id, name, muscle, custom: false }));
+
+const ROUT = {
+  Push: [['bench', 60, 72.5], ['ohp', 40, 47.5], ['incline', 22, 28], ['lateral', 8, 11], ['pushdown', 25, 32.5]],
+  Pull: [['deadlift', 100, 125], ['row', 60, 72.5], ['latpd', 50, 60], ['facepull', 20, 27.5], ['curl', 30, 37.5]],
+  Legs: [['squat', 80, 105], ['rdl', 70, 90], ['legpress', 140, 180], ['legcurl', 35, 45], ['calf', 60, 80]],
+};
+const HIGH_REP = ['lateral', 'facepull', 'curl', 'pushdown', 'calf', 'legcurl'];
+function mulberry(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function weightAt(base, end, wk) { const raw = base + (end - base) * wk / 7, inc = raw < 15 ? 1 : 2.5; return Math.round(raw / inc) * inc; }
+
+function makeSample() {
+  const rnd = mulberry(42), today = startOfDay(Date.now()), workouts = [];
+  for (let off = 56; off >= 1; off--) {
+    const d = new Date(today); d.setDate(d.getDate() - off);
+    const type = { 1: 'Push', 3: 'Pull', 5: 'Legs' }[d.getDay()];
+    if (!type || rnd() < 0.14) continue;
+    const wk = (56 - off) / 8;
+    const start = d.getTime() + (17 + Math.floor(rnd() * 3)) * 3600e3 + Math.floor(rnd() * 50) * 60e3;
+    const end = start + (48 + Math.floor(rnd() * 25)) * 60e3;
+    const items = ROUT[type].map(([id, b, e]) => {
+      const n = 3 + (rnd() < 0.4 ? 1 : 0), w = weightAt(b, e, wk), base = HIGH_REP.includes(id) ? 12 : 8;
+      return { id: uid(), exerciseId: id, sets: Array.from({ length: n }, (_, i) => ({ id: uid(), weight: w, reps: Math.max(4, base + Math.floor(rnd() * 3) - 1 - (i >= 2 ? 1 : 0)), done: true })) };
+    });
+    workouts.push({ id: uid(), name: type + ' Day', start, end, items, sample: true });
+  }
+  const templates = Object.entries(ROUT).map(([type, list]) => ({
+    id: uid(), name: type + ' Day', day: { Push: 1, Pull: 3, Legs: 5 }[type], sample: true,
+    items: list.map(([id, b, e]) => ({ id: uid(), exerciseId: id, sets: Array.from({ length: 3 }, () => ({ id: uid(), weight: weightAt(b, e, 7.5), reps: HIGH_REP.includes(id) ? 12 : 8 })) })),
+  }));
+  return { workouts, templates };
+}
+
+const KEY = 'setlog.v1';
+function loadDb() {
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (raw) {
+      const d = JSON.parse(raw);
+      if (d && Array.isArray(d.exercises) && Array.isArray(d.workouts)) {
+        return { templates: [], active: null, rest: null, ...d, settings: { unit: 'kg', rest: 90, goal: 4, ...(d.settings || {}) } };
+      }
+    }
+  } catch (e) {}
+  const s = makeSample();
+  return { exercises: DEFAULT_EX, templates: s.templates, workouts: s.workouts, active: null, rest: null, settings: { unit: 'kg', rest: 90, goal: 4 } };
+}
+function saveDb(d) { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch (e) {} }
+
+/* ---------- sound ---------- */
+let actx;
+function unlockAudio() { try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === 'suspended') actx.resume(); } catch (e) {} }
+function beep() {
+  try {
+    unlockAudio();
+    [0, 0.25, 0.5].forEach((t, i) => {
+      const o = actx.createOscillator(), g = actx.createGain(), s = actx.currentTime + t;
+      o.frequency.value = i === 2 ? 988 : 784; o.connect(g); g.connect(actx.destination);
+      g.gain.setValueAtTime(0.0001, s); g.gain.exponentialRampToValueAtTime(0.25, s + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, s + 0.2);
+      o.start(s); o.stop(s + 0.22);
+    });
+    if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+  } catch (e) {}
+}
+
+function useNow(ms) { const [n, setN] = useState(Date.now()); useEffect(() => { const t = setInterval(() => setN(Date.now()), ms); return () => clearInterval(t); }, [ms]); return n; }
+function useSize() {
+  const ref = useRef(null); const [w, setW] = useState(320);
+  useEffect(() => { const el = ref.current; if (!el) return; setW(el.clientWidth || 320); const ro = new ResizeObserver(() => setW(el.clientWidth || 320)); ro.observe(el); return () => ro.disconnect(); }, []);
+  return [ref, w];
+}
+
+/* ---------- ui atoms ---------- */
+const btnPrimary = 'inline-flex items-center justify-center gap-2 rounded-xl bg-accent text-[#1a0d05] font-semibold px-4 py-2.5 hover:brightness-110 active:scale-[.98] transition disabled:opacity-40 disabled:pointer-events-none';
+const btnGhost = 'inline-flex items-center justify-center gap-2 rounded-xl bg-surf2 border border-line text-ink px-3.5 py-2.5 hover:border-faint active:scale-[.98] transition disabled:opacity-40 disabled:pointer-events-none';
+const inputCls = 'w-full rounded-lg bg-surf2 border border-line px-3 py-2 text-ink placeholder:text-faint focus:border-accent outline-none';
+const Card = ({ className = '', children }) => <div className={'rounded-2xl bg-surf border border-line ' + className}>{children}</div>;
+const Pill = ({ children, className = '' }) => <span className={'inline-block rounded-full bg-surf2 border border-line px-2 py-0.5 text-[11px] uppercase tracking-wider text-mute ' + className}>{children}</span>;
+const Empty = ({ icon: I, title, text, children }) => (
+  <div className="flex flex-col items-center text-center gap-2 py-10 px-4">
+    <div className="h-12 w-12 rounded-full bg-surf2 grid place-items-center text-accent"><I size={22} /></div>
+    <div className="font-semibold">{title}</div>
+    {text && <p className="text-mute text-sm max-w-xs">{text}</p>}
+    {children}
+  </div>
+);
+
+function PageHeader({ title, sub, right, onSettings }) {
+  return (
+    <div className="flex items-start justify-between gap-3 mb-5">
+      <div className="min-w-0">
+        <h1 className="disp text-4xl font-semibold leading-none">{title}</h1>
+        {sub && <p className="text-mute mt-1.5 text-sm">{sub}</p>}
+      </div>
+      <div className="flex items-center gap-2 shrink-0">
+        {right}
+        <button aria-label="Settings" onClick={onSettings} className="h-10 w-10 grid place-items-center rounded-xl bg-surf border border-line text-mute hover:text-ink"><Settings size={18} /></button>
+      </div>
+    </div>
+  );
+}
+
+function Sheet({ onClose, title, children, wide }) {
+  useEffect(() => { const h = (e) => e.key === 'Escape' && onClose(); window.addEventListener('keydown', h); return () => window.removeEventListener('keydown', h); }, []);
+  return (
+    <div className="fixed inset-0 z-50 bg-black/65 flex items-end md:items-center justify-center" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
+      <div className={'pop w-full ' + (wide ? 'md:max-w-xl' : 'md:max-w-md') + ' max-h-[88vh] flex flex-col bg-surf border border-line rounded-t-3xl md:rounded-3xl'}>
+        <div className="flex items-center justify-between px-5 pt-4 pb-3">
+          <h2 className="disp text-2xl font-semibold">{title}</h2>
+          <button aria-label="Close" onClick={onClose} className="h-9 w-9 grid place-items-center rounded-lg text-mute hover:text-ink hover:bg-surf2"><X size={18} /></button>
+        </div>
+        <div className="overflow-y-auto px-5 pb-6 flex-1">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------- charts ---------- */
+const GRID = '#2a2f3b', TICK = '#687080', SURF = '#171a21';
+
+function Tooltip({ x, y, w, children }) {
+  const left = Math.min(Math.max(x, 70), w - 70);
+  const below = y < 56;
+  return (
+    <div className="pointer-events-none absolute z-10 rounded-lg bg-[#232834] border border-line px-2.5 py-1.5 text-xs shadow-lg whitespace-nowrap"
+      style={{ left, top: below ? y + 14 : y - 8, transform: below ? 'translateX(-50%)' : 'translate(-50%,-100%)' }}>{children}</div>
+  );
+}
+
+function barPath(x, y, w, h, r) {
+  if (h <= 0) return '';
+  r = Math.min(r, w / 2, h);
+  return `M${x},${y + h}V${y + r}Q${x},${y} ${x + r},${y}H${x + w - r}Q${x + w},${y} ${x + w},${y + r}V${y + h}Z`;
+}
+
+function BarChart({ data, height = 200, color = '#ff7a3d', goal, fmt = fmtNum, unit = '', yFmt = compact }) {
+  const [ref, w] = useSize(); const [hi, setHi] = useState(null);
+  if (!data.length) return <div className="text-mute text-sm py-8 text-center">No data in this range yet.</div>;
+  const m = { l: 36, r: 6, t: 10, b: 24 }, iw = Math.max(10, w - m.l - m.r), ih = height - m.t - m.b;
+  const maxV = Math.max(...data.map((d) => d.value), goal || 0, 1);
+  const ticks = niceTicks(0, maxV, 4), top = ticks[ticks.length - 1];
+  const y = (v) => m.t + ih - (v / top) * ih;
+  const n = data.length, band = iw / n, bw = Math.max(3, Math.min(band - 4, 34));
+  const step = Math.max(1, Math.ceil(n / Math.max(1, Math.floor(iw / 54))));
+  const onMove = (e) => { const r = ref.current.getBoundingClientRect(); const i = Math.floor((e.clientX - r.left - m.l) / band); setHi(i >= 0 && i < n ? i : null); };
+  const d = hi != null ? data[hi] : null;
+  return (
+    <div ref={ref} className="relative w-full select-none">
+      <svg width={w} height={height} style={{ touchAction: 'pan-y', display: 'block' }} onPointerMove={onMove} onPointerDown={onMove} onPointerLeave={() => setHi(null)}>
+        {ticks.map((t) => (
+          <g key={t}>
+            <line x1={m.l} x2={w - m.r} y1={y(t)} y2={y(t)} stroke={GRID} strokeWidth="1" />
+            <text x={m.l - 6} y={y(t) + 3.5} textAnchor="end" fontSize="10.5" fill={TICK}>{yFmt(t)}</text>
+          </g>
+        ))}
+        {data.map((p, i) => {
+          const cx = m.l + band * (i + 0.5), h = ih - (y(p.value) - m.t);
+          return (
+            <g key={i}>
+              <path d={barPath(cx - bw / 2, y(p.value), bw, h, 4)} fill={color} opacity={hi == null || hi === i ? 1 : 0.55} />
+              {i % step === 0 && <text x={cx} y={height - 7} textAnchor="middle" fontSize="10.5" fill={TICK}>{p.label}</text>}
+            </g>
+          );
+        })}
+        {goal > 0 && (
+          <g>
+            <line x1={m.l} x2={w - m.r} y1={y(goal)} y2={y(goal)} stroke="#eceff4" strokeWidth="1.25" strokeDasharray="4 4" opacity=".7" />
+            <text x={w - m.r - 2} y={y(goal) - 5} textAnchor="end" fontSize="10.5" fill="#eceff4">Goal {goal}</text>
+          </g>
+        )}
+      </svg>
+      {d && <Tooltip x={m.l + band * (hi + 0.5)} y={y(d.value)} w={w}><div className="text-mute">{d.tip || d.label}</div><div className="font-semibold num">{fmt(d.value)}{unit && ' ' + unit}</div></Tooltip>}
+    </div>
+  );
+}
+
+function LineChart({ data, height = 200, color = '#4cc2ff', fmt = fmtNum, unit = '', yFmt = compact, zeroBase = false }) {
+  const [ref, w] = useSize(); const [hi, setHi] = useState(null); const gid = useRef('g' + uid()).current;
+  if (!data.length) return <div className="text-mute text-sm py-8 text-center">No data in this range yet.</div>;
+  const m = { l: 40, r: 10, t: 14, b: 24 }, iw = Math.max(10, w - m.l - m.r), ih = height - m.t - m.b, n = data.length;
+  const vals = data.map((d) => d.value);
+  let mn = zeroBase ? 0 : Math.min(...vals), mx = Math.max(...vals);
+  if (!zeroBase) { const pad = (mx - mn) * 0.2 || mx * 0.1 || 1; mn = Math.max(0, mn - pad); mx += pad; }
+  const ticks = niceTicks(mn, mx, 4), lo = ticks[0], top = ticks[ticks.length - 1];
+  const x = (i) => m.l + 10 + (n === 1 ? (iw - 20) / 2 : ((iw - 20) * i) / (n - 1));
+  const y = (v) => m.t + ih - ((v - lo) / (top - lo)) * ih;
+  const line = data.map((d, i) => (i ? 'L' : 'M') + x(i) + ',' + y(d.value)).join('');
+  const area = line + `L${x(n - 1)},${m.t + ih}L${x(0)},${m.t + ih}Z`;
+  const step = Math.max(1, Math.ceil(n / Math.max(1, Math.floor(iw / 54))));
+  const onMove = (e) => { const r = ref.current.getBoundingClientRect(); const px = e.clientX - r.left - m.l - 10; setHi(n === 1 ? 0 : Math.max(0, Math.min(n - 1, Math.round(px / ((iw - 20) / (n - 1)))))); };
+  const d = hi != null ? data[hi] : null, last = data[n - 1];
+  return (
+    <div ref={ref} className="relative w-full select-none">
+      <svg width={w} height={height} style={{ touchAction: 'pan-y', display: 'block' }} onPointerMove={onMove} onPointerDown={onMove} onPointerLeave={() => setHi(null)}>
+        <defs><linearGradient id={gid} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor={color} stopOpacity=".28" /><stop offset="1" stopColor={color} stopOpacity="0" /></linearGradient></defs>
+        {ticks.map((t) => (
+          <g key={t}>
+            <line x1={m.l} x2={w - m.r} y1={y(t)} y2={y(t)} stroke={GRID} strokeWidth="1" />
+            <text x={m.l - 6} y={y(t) + 3.5} textAnchor="end" fontSize="10.5" fill={TICK}>{yFmt(t)}</text>
+          </g>
+        ))}
+        {n > 1 && <path d={area} fill={`url(#${gid})`} />}
+        <path d={line} fill="none" stroke={color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+        {data.map((p, i) => (n <= 30 || i === n - 1) && <circle key={i} cx={x(i)} cy={y(p.value)} r={i === n - 1 ? 4.5 : 3} fill={color} stroke={SURF} strokeWidth="2" />)}
+        {data.map((p, i) => i % step === 0 && <text key={'l' + i} x={x(i)} y={height - 7} textAnchor="middle" fontSize="10.5" fill={TICK}>{p.label}</text>)}
+        {hi == null && <text x={x(n - 1)} y={y(last.value) - 10} textAnchor={n > 1 ? 'end' : 'middle'} fontSize="11.5" fontWeight="600" fill="#eceff4">{fmt(last.value)}</text>}
+        {d && (<g><line x1={x(hi)} x2={x(hi)} y1={m.t} y2={m.t + ih} stroke="#687080" strokeWidth="1" /><circle cx={x(hi)} cy={y(d.value)} r="5.5" fill={color} stroke={SURF} strokeWidth="2.5" /></g>)}
+      </svg>
+      {d && <Tooltip x={x(hi)} y={y(d.value)} w={w}><div className="text-mute">{d.tip || d.label}</div><div className="font-semibold num">{fmt(d.value)}{unit && ' ' + unit}</div></Tooltip>}
+    </div>
+  );
+}
+
+function Heatmap({ workouts }) {
+  const [ref, w] = useSize(); const [tip, setTip] = useState(null);
+  const weeks = w > 640 ? 26 : 16, left = 24, top = 18, gap = 3;
+  const cell = Math.max(8, Math.min(20, Math.floor((w - left) / weeks) - gap));
+  const start = startOfWeek(Date.now()); start.setDate(start.getDate() - 7 * (weeks - 1));
+  const byDay = {};
+  workouts.forEach((x) => { const k = dayKey(x.start); const e = byDay[k] || (byDay[k] = { vol: 0, names: [] }); e.vol += workoutVolume(x); e.names.push(x.name); });
+  const maxV = Math.max(1, ...Object.values(byDay).map((e) => e.vol));
+  const level = (v) => (v <= 0 ? 0 : v < maxV * 0.34 ? 1 : v < maxV * 0.67 ? 2 : 3);
+  const fills = ['#232834', 'rgba(255,122,61,.35)', 'rgba(255,122,61,.65)', '#ff7a3d'];
+  const cells = [], months = []; let prevM = -1;
+  for (let c = 0; c < weeks; c++) {
+    const cd = new Date(start); cd.setDate(cd.getDate() + c * 7);
+    if (cd.getMonth() !== prevM) { months.push({ c, label: cd.toLocaleDateString(undefined, { month: 'short' }) }); prevM = cd.getMonth(); }
+    for (let r = 0; r < 7; r++) {
+      const d = new Date(start); d.setDate(d.getDate() + c * 7 + r);
+      if (d.getTime() > Date.now()) continue;
+      cells.push({ c, r, d, e: byDay[dayKey(d)] });
+    }
+  }
+  const H = top + 7 * (cell + gap);
+  return (
+    <div ref={ref} className="relative w-full select-none">
+      <svg width={w} height={H} style={{ display: 'block' }} onPointerLeave={() => setTip(null)}>
+        {months.map((mo) => <text key={mo.c} x={left + mo.c * (cell + gap)} y={10} fontSize="10.5" fill={TICK}>{mo.label}</text>)}
+        {['Mon', 'Wed', 'Fri'].map((l, i) => <text key={l} x={0} y={top + i * 2 * (cell + gap) + cell * 0.75} fontSize="10" fill={TICK}>{l[0]}</text>)}
+        {cells.map(({ c, r, d, e }) => (
+          <rect key={c + '-' + r} x={left + c * (cell + gap)} y={top + r * (cell + gap)} width={cell} height={cell} rx="3" fill={fills[level(e ? e.vol : 0)]}
+            onPointerEnter={() => setTip({ x: left + c * (cell + gap) + cell / 2, y: top + r * (cell + gap), d, e })} onPointerDown={() => setTip({ x: left + c * (cell + gap) + cell / 2, y: top + r * (cell + gap), d, e })} />
+        ))}
+      </svg>
+      {tip && <Tooltip x={tip.x} y={tip.y} w={w}><div className="text-mute">{fmtDate(tip.d)}</div><div className="font-semibold num">{tip.e ? tip.e.names.join(', ') + ' · ' + fmtNum(tip.e.vol) : 'Rest day'}</div></Tooltip>}
+      <div className="flex items-center gap-1.5 mt-2 text-[11px] text-faint justify-end">Less{fills.map((f, i) => <span key={i} className="h-3 w-3 rounded-[3px]" style={{ background: f }} />)}More</div>
+    </div>
+  );
+}
+
+function ChartCard({ title, sub, right, children }) {
+  return (
+    <Card className="p-4">
+      <div className="flex items-start justify-between gap-3 mb-3 flex-wrap">
+        <div className="min-w-0"><h3 className="font-semibold">{title}</h3>{sub && <p className="text-xs text-mute mt-0.5">{sub}</p>}</div>
+        {right}
+      </div>
+      {children}
+    </Card>
+  );
+}
+const Seg = ({ value, options, onChange }) => (
+  <div className="inline-flex rounded-lg bg-surf2 border border-line p-0.5">
+    {options.map((o) => <button key={o} onClick={() => onChange(o)} className={'px-2.5 py-1 text-xs rounded-md transition ' + (value === o ? 'bg-accent text-[#1a0d05] font-semibold' : 'text-mute hover:text-ink')}>{o}</button>)}
+  </div>
+);
+const Tile = ({ label, value, sub, subTone }) => (
+  <Card className="p-3.5">
+    <div className="text-[11px] uppercase tracking-wider text-mute">{label}</div>
+    <div className="disp text-3xl font-semibold mt-1 num leading-none">{value}</div>
+    {sub && <div className={'text-xs mt-1.5 ' + (subTone === 'up' ? 'text-ok' : subTone === 'down' ? 'text-mute' : 'text-mute')}>{sub}</div>}
+  </Card>
+);
+
+/* ---------- exercise picker ---------- */
+function ExercisePicker({ exercises, onClose, onAdd, onCreate }) {
+  const [q, setQ] = useState(''); const [mu, setMu] = useState('All'); const [sel, setSel] = useState([]);
+  const [creating, setCreating] = useState(false); const [nn, setNn] = useState(''); const [nm, setNm] = useState('Chest');
+  const list = exercises.filter((e) => (mu === 'All' || e.muscle === mu) && e.name.toLowerCase().includes(q.toLowerCase()));
+  const toggle = (id) => setSel((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
+  const create = () => { if (!nn.trim()) return; const ex = { id: uid(), name: nn.trim(), muscle: nm, custom: true }; onCreate(ex); setSel((s) => [...s, ex.id]); setNn(''); setCreating(false); };
+  return (
+    <Sheet title="Add exercises" onClose={onClose} wide>
+      <div className="relative mb-3"><Search size={16} className="absolute left-3 top-3 text-faint" /><input id="pick-q" aria-label="Search exercises" className={inputCls + ' pl-9'} placeholder="Search exercises" value={q} onChange={(e) => setQ(e.target.value)} /></div>
+      <div className="flex gap-1.5 overflow-x-auto pb-2 -mx-1 px-1">
+        {['All', ...MUSCLES].map((m) => <button key={m} onClick={() => setMu(m)} className={'shrink-0 rounded-full px-3 py-1 text-sm border ' + (mu === m ? 'bg-accent border-accent text-[#1a0d05] font-semibold' : 'bg-surf2 border-line text-mute')}>{m}</button>)}
+      </div>
+      <div className="mt-2 divide-y divide-line">
+        {list.map((e) => (
+          <button key={e.id} onClick={() => toggle(e.id)} className="w-full flex items-center justify-between py-2.5 text-left">
+            <span><span className="font-medium">{e.name}</span> <span className="text-xs text-faint ml-1.5">{e.muscle}{e.custom ? ' · custom' : ''}</span></span>
+            <span className={'h-6 w-6 rounded-md grid place-items-center border ' + (sel.includes(e.id) ? 'bg-accent border-accent text-[#1a0d05]' : 'border-line text-transparent')}><Check size={15} /></span>
+          </button>
+        ))}
+        {!list.length && <p className="text-mute text-sm py-6 text-center">No match. Create it below.</p>}
+      </div>
+      {creating ? (
+        <div className="mt-3 rounded-xl border border-line p-3 grid gap-2">
+          <input id="pick-new" aria-label="Exercise name" className={inputCls} placeholder="Exercise name" value={nn} onChange={(e) => setNn(e.target.value)} autoFocus />
+          <select id="pick-muscle" aria-label="Muscle group" className={inputCls} value={nm} onChange={(e) => setNm(e.target.value)}>{MUSCLES.map((m) => <option key={m}>{m}</option>)}</select>
+          <div className="flex gap-2"><button className={btnPrimary + ' flex-1'} onClick={create}>Save exercise</button><button className={btnGhost} onClick={() => setCreating(false)}>Cancel</button></div>
+        </div>
+      ) : <button className={btnGhost + ' w-full mt-3'} onClick={() => { setCreating(true); setNn(q); }}><Plus size={16} /> Create custom exercise</button>}
+      <div className="sticky bottom-0 pt-3 mt-3 bg-surf"><button disabled={!sel.length} className={btnPrimary + ' w-full'} onClick={() => { onAdd(sel); onClose(); }}>Add {sel.length || ''} exercise{sel.length === 1 ? '' : 's'}</button></div>
+    </Sheet>
+  );
+}
+
+/* ---------- exercise card (used live + in plans) ---------- */
+function NumInput({ value, onChange, placeholder, label, bad }) {
+  return <input aria-label={label} inputMode="decimal" className={'w-full rounded-lg bg-surf2 border px-1 py-2 text-center num outline-none focus:border-accent ' + (bad ? 'border-red-400 shake' : 'border-line')}
+    value={value ?? ''} placeholder={placeholder} onChange={(e) => /^\d*\.?\d*$/.test(e.target.value) && onChange(e.target.value)} onFocus={(e) => e.target.select()} />;
+}
+
+function ExerciseCard({ item, ex, mode, unit, onChange, onRemove, prevSets, onDone, onMove }) {
+  const live = mode === 'live'; const [bad, setBad] = useState(null);
+  const upd = (i, patch) => onChange({ ...item, sets: item.sets.map((s, k) => (k === i ? { ...s, ...patch } : s)) });
+  const addSet = () => { const l = item.sets[item.sets.length - 1]; onChange({ ...item, sets: [...item.sets, { id: uid(), weight: l ? l.weight : '', reps: l ? l.reps : '', done: false }] }); };
+  const rmSet = () => item.sets.length && onChange({ ...item, sets: item.sets.slice(0, -1) });
+  const toggle = (i) => {
+    const s = item.sets[i];
+    if (s.done) return upd(i, { done: false });
+    const p = prevSets && prevSets[i], pr = i > 0 ? item.sets[i - 1] : null;
+    const blank = (v) => v === '' || v == null;
+    const weight = blank(s.weight) ? (p ? p.weight : pr ? pr.weight : '') : s.weight;
+    const reps = blank(s.reps) ? (p ? p.reps : pr ? pr.reps : '') : s.reps;
+    if (!(+reps > 0)) { setBad(s.id); setTimeout(() => setBad(null), 700); return; }
+    upd(i, { weight, reps, done: true }); onDone && onDone();
+  };
+  const cols = live ? 'grid-cols-[1.75rem_1fr_4.25rem_3.75rem_2.5rem]' : 'grid-cols-[1.75rem_1fr_1fr]';
+  return (
+    <Card className="p-3 md:p-4">
+      <div className="flex items-start justify-between gap-2 mb-2">
+        <div className="min-w-0"><div className="font-semibold leading-tight">{ex ? ex.name : 'Unknown exercise'}</div>{ex && <Pill className="mt-1">{ex.muscle}</Pill>}</div>
+        <div className="flex gap-0.5 shrink-0">
+          {onMove && <><button aria-label="Move up" onClick={() => onMove(-1)} className="h-8 w-8 grid place-items-center text-faint hover:text-ink"><ArrowUp size={16} /></button><button aria-label="Move down" onClick={() => onMove(1)} className="h-8 w-8 grid place-items-center text-faint hover:text-ink"><ArrowDown size={16} /></button></>}
+          <button aria-label="Remove exercise" onClick={onRemove} className="h-8 w-8 grid place-items-center text-faint hover:text-red-400"><Trash2 size={16} /></button>
+        </div>
+      </div>
+      <div className={'grid gap-1.5 items-center text-[10.5px] uppercase tracking-wider text-faint mb-1 ' + cols}>
+        <span className="text-center">Set</span>{live && <span>Previous</span>}<span className="text-center">{unit}</span><span className="text-center">Reps</span>{live && <span />}
+      </div>
+      <div className="grid gap-1.5">
+        {item.sets.map((s, i) => {
+          const p = prevSets && prevSets[i];
+          return (
+            <div key={s.id} className={'grid gap-1.5 items-center rounded-lg ' + cols + (live && s.done ? ' bg-ok/10' : '')}>
+              <span className="text-center text-sm text-mute num">{i + 1}</span>
+              {live && <span className="text-sm text-faint num truncate">{p ? `${p.weight}×${p.reps}` : '–'}</span>}
+              <NumInput label={`Set ${i + 1} weight`} value={s.weight} placeholder={p ? String(p.weight) : unit} onChange={(v) => upd(i, { weight: v })} />
+              <NumInput label={`Set ${i + 1} reps`} value={s.reps} placeholder={p ? String(p.reps) : '0'} bad={bad === s.id} onChange={(v) => upd(i, { reps: v })} />
+              {live && <button aria-label={s.done ? 'Mark set incomplete' : 'Mark set complete'} aria-pressed={s.done} onClick={() => toggle(i)} className={'h-10 w-10 rounded-lg grid place-items-center border transition ' + (s.done ? 'bg-ok border-ok text-[#06220f]' : 'bg-surf2 border-line text-faint hover:text-ink')}><Check size={18} /></button>}
+            </div>
+          );
+        })}
+      </div>
+      <div className="flex gap-2 mt-2.5">
+        <button onClick={addSet} className="flex-1 rounded-lg bg-surf2 border border-line py-2 text-sm text-mute hover:text-ink flex items-center justify-center gap-1.5"><Plus size={15} /> Add set</button>
+        <button onClick={rmSet} aria-label="Remove last set" className="rounded-lg bg-surf2 border border-line px-3 text-mute hover:text-ink"><Minus size={15} /></button>
+      </div>
+    </Card>
+  );
+}
+
+/* ---------- rest timer ---------- */
+function RestBar({ rest, setDb }) {
+  const now = useNow(250); const fired = useRef(null);
+  const left = Math.ceil((rest.end - now) / 1000), done = left <= 0;
+  useEffect(() => {
+    if (done && fired.current !== rest.end) { fired.current = rest.end; beep(); }
+    if (done && now > rest.end + 6000) setDb((d) => ({ ...d, rest: null }));
+  });
+  const adjust = (s) => setDb((d) => ({ ...d, rest: d.rest && { ...d.rest, end: d.rest.end + s * 1000, total: Math.max(5000, d.rest.total + s * 1000) } }));
+  const R = 18, C = 2 * Math.PI * R, frac = done ? 0 : Math.max(0, Math.min(1, (rest.end - now) / rest.total));
+  return (
+    <div className="fixed z-40 inset-x-3 md:left-[15rem] md:right-4 bottom-[calc(4.5rem+env(safe-area-inset-bottom,0px))] md:bottom-4 pop">
+      <div className={'mx-auto max-w-xl rounded-2xl border px-3 py-2.5 flex items-center gap-3 shadow-xl ' + (done ? 'bg-ok border-ok text-[#06220f]' : 'bg-[#232834] border-line')}>
+        <svg width="44" height="44" viewBox="0 0 44 44" className="shrink-0 -rotate-90">
+          <circle cx="22" cy="22" r={R} fill="none" stroke={done ? 'rgba(6,34,15,.25)' : '#2f3542'} strokeWidth="4" />
+          <circle cx="22" cy="22" r={R} fill="none" stroke={done ? '#06220f' : '#ff7a3d'} strokeWidth="4" strokeLinecap="round" strokeDasharray={C} strokeDashoffset={C * (1 - frac)} />
+        </svg>
+        <div className="flex-1 min-w-0">
+          <div className={'text-[11px] uppercase tracking-wider ' + (done ? '' : 'text-mute')}>{done ? 'Rest complete' : 'Rest'}</div>
+          <div className="disp text-3xl font-semibold leading-none num">{done ? 'Go!' : fmtClock(left)}</div>
+        </div>
+        {!done && <>
+          <button onClick={() => adjust(-15)} className="rounded-lg bg-surf2 border border-line px-2.5 py-1.5 text-sm num">−15</button>
+          <button onClick={() => adjust(15)} className="rounded-lg bg-surf2 border border-line px-2.5 py-1.5 text-sm num">+15</button>
+        </>}
+        <button aria-label={done ? 'Dismiss' : 'Skip rest'} onClick={() => setDb((d) => ({ ...d, rest: null }))} className={'h-9 w-9 grid place-items-center rounded-lg ' + (done ? 'bg-[#06220f]/15' : 'bg-accent text-[#1a0d05]')}>{done ? <X size={17} /> : <SkipForward size={17} />}</button>
+      </div>
+    </div>
+  );
+}
+
+/* ---------- dashboard ---------- */
+function weeksBack(n) { const ws = startOfWeek(Date.now()); const out = []; for (let i = n - 1; i >= 0; i--) { const s = new Date(ws); s.setDate(s.getDate() - 7 * i); const e = new Date(s); e.setDate(e.getDate() + 7); out.push({ s: s.getTime(), e: e.getTime(), label: fmtShort(s) }); } return out; }
+const inWeek = (ws, wk) => ws.filter((w) => w.start >= wk.s && w.start < wk.e);
+
+function Dashboard({ db, ctx }) {
+  const { workouts, templates, active, settings } = db; const unit = settings.unit;
+  const hour = new Date().getHours(), greet = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+  const wks = weeksBack(8), cur = wks[7], prev = wks[6];
+  const thisW = inWeek(workouts, cur), lastW = inWeek(workouts, prev);
+  const vol = (l) => l.reduce((a, w) => a + workoutVolume(w), 0);
+  const v1 = vol(thisW), v0 = vol(lastW);
+  const delta = v0 > 0 ? Math.round(((v1 - v0) / v0) * 100) : null;
+  let streak = 0; { const all = weeksBack(52).reverse(); let i = inWeek(workouts, all[0]).length ? 0 : 1; for (; i < all.length; i++) { if (inWeek(workouts, all[i]).length) streak++; else break; } }
+  const days = Array.from({ length: 7 }, (_, i) => { const d = new Date(cur.s); d.setDate(d.getDate() + i); return d; });
+  const todayKey = dayKey(Date.now()), trained = new Set(thisW.map((w) => dayKey(w.start)));
+  const todays = templates.filter((t) => t.day === new Date().getDay());
+  const recent = [...workouts].sort((a, b) => b.start - a.start).slice(0, 4);
+  const now = useNow(1000);
+  const sampleOn = workouts.some((w) => w.sample) || templates.some((t) => t.sample);
+  return (
+    <div>
+      <PageHeader title={greet} sub={fmtDate(Date.now())} onSettings={() => ctx.setModal({ type: 'settings' })} />
+      {sampleOn && (
+        <div className="mb-4 rounded-xl border border-line bg-surf px-4 py-3 flex flex-wrap items-center gap-3 text-sm">
+          <Sparkles size={16} className="text-accent shrink-0" />
+          <span className="flex-1 min-w-[12rem] text-mute">Showing sample workouts from the past 8 weeks so the charts have something to show. Your own sessions are added alongside.</span>
+          <button className={btnGhost + ' !py-1.5 !px-3 text-sm'} onClick={ctx.clearSample}>Clear sample data</button>
+        </div>
+      )}
+      {active ? (
+        <Card className="p-4 mb-4 border-accent/50">
+          <div className="flex items-center gap-3">
+            <span className="relative flex h-3 w-3"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-60" /><span className="relative inline-flex rounded-full h-3 w-3 bg-accent" /></span>
+            <div className="flex-1 min-w-0"><div className="font-semibold truncate">{active.name}</div><div className="text-sm text-mute num">In progress · {fmtClock((now - active.start) / 1000)}</div></div>
+            <button className={btnPrimary} onClick={() => ctx.setView('workout')}>Resume</button>
+          </div>
+        </Card>
+      ) : (
+        <Card className="p-4 mb-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex-1 min-w-[12rem]">
+              <div className="disp text-2xl font-semibold leading-tight">{todays.length ? `Today: ${todays.map((t) => t.name).join(' + ')}` : 'Ready when you are'}</div>
+              <div className="text-sm text-mute mt-0.5">{todays.length ? 'Planned for today. Tap to load it.' : 'Start empty or pick a saved plan.'}</div>
+            </div>
+            {todays.length ? <button className={btnPrimary + ' !px-6 !py-3 text-lg'} onClick={() => ctx.startWorkout(todays[0])}><Play size={20} /> Start {todays[0].name}</button>
+              : <button className={btnPrimary + ' !px-6 !py-3 text-lg'} onClick={() => ctx.startWorkout(null)}><Play size={20} /> Quick start</button>}
+          </div>
+          {(templates.length > 0) && (
+            <div className="flex gap-2 overflow-x-auto mt-3 pt-3 border-t border-line">
+              {todays.length > 0 && <button className={btnGhost + ' shrink-0 !py-1.5 text-sm'} onClick={() => ctx.startWorkout(null)}>Empty workout</button>}
+              {templates.filter((t) => !todays.includes(t)).map((t) => <button key={t.id} className={btnGhost + ' shrink-0 !py-1.5 text-sm'} onClick={() => ctx.startWorkout(t)}><Play size={14} /> {t.name}</button>)}
+            </div>
+          )}
+        </Card>
+      )}
+
+      <div className="grid md:grid-cols-5 gap-4 mb-4">
+        <Card className="p-4 md:col-span-3">
+          <div className="flex items-baseline justify-between mb-3">
+            <h3 className="font-semibold">This week</h3>
+            <span className="text-sm text-mute num"><span className="text-ink font-semibold">{thisW.length}</span> of {settings.goal} workouts</span>
+          </div>
+          <div className="grid grid-cols-7 gap-1.5">
+            {days.map((d, i) => {
+              const k = dayKey(d), did = trained.has(k), isToday = k === todayKey, planned = templates.some((t) => t.day === d.getDay());
+              return (
+                <div key={k} className="flex flex-col items-center gap-1.5">
+                  <span className="text-[11px] uppercase text-faint">{'MTWTFSS'[i]}</span>
+                  <span className={'h-9 w-9 rounded-full grid place-items-center border ' + (did ? 'bg-accent border-accent text-[#1a0d05]' : isToday ? 'border-accent text-accent' : 'border-line text-faint')}>
+                    {did ? <Check size={17} /> : <span className="text-xs num">{d.getDate()}</span>}
+                  </span>
+                  <span className={'h-1.5 w-1.5 rounded-full ' + (planned && !did ? 'bg-steel' : 'bg-transparent')} />
+                </div>
+              );
+            })}
+          </div>
+          <div className="mt-3 h-2 rounded-full bg-surf2 overflow-hidden"><div className="h-full bg-accent rounded-full transition-all" style={{ width: Math.min(100, (thisW.length / settings.goal) * 100) + '%' }} /></div>
+          <div className="text-xs text-faint mt-2 flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-steel" /> Planned day with a saved workout</div>
+        </Card>
+        <div className="md:col-span-2 grid grid-cols-2 md:grid-cols-1 gap-4">
+          <Tile label="Weekly streak" value={<span className="inline-flex items-center gap-1.5"><Flame size={22} className="text-accent" />{streak}</span>} sub={streak === 1 ? 'week in a row' : 'weeks in a row'} />
+          <Tile label="Volume this week" value={fmtNum(v1)} sub={delta == null ? unit + ' lifted' : (delta >= 0 ? '▲ ' : '▼ ') + Math.abs(delta) + '% vs last week'} subTone={delta != null && delta >= 0 ? 'up' : 'down'} />
+        </div>
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-4">
+        <ChartCard title="Weekly volume" sub={`Total ${unit} lifted, last 8 weeks`}>
+          <BarChart height={170} data={wks.map((wk) => ({ label: wk.label, value: vol(inWeek(workouts, wk)), tip: 'Week of ' + wk.label }))} unit={unit} />
+        </ChartCard>
+        <Card className="p-4">
+          <div className="flex items-center justify-between mb-2"><h3 className="font-semibold">Recent workouts</h3><button className="text-sm text-accent" onClick={() => ctx.openHistory()}>See all</button></div>
+          {recent.length ? <div className="divide-y divide-line">{recent.map((w) => (
+            <button key={w.id} onClick={() => ctx.openHistory(w.id)} className="w-full text-left py-2.5 flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-surf2 grid place-items-center text-accent shrink-0"><Dumbbell size={18} /></div>
+              <div className="flex-1 min-w-0"><div className="font-medium truncate">{w.name}</div><div className="text-xs text-mute">{relDate(w.start)} · {w.items.length} exercises · {fmtMin((w.end - w.start) / 60000)}</div></div>
+              <div className="text-right"><div className="font-semibold num">{fmtNum(workoutVolume(w))}</div><div className="text-[11px] text-faint">{unit}</div></div>
+            </button>))}</div>
+            : <Empty icon={Dumbbell} title="No workouts yet" text="Finish your first session and it shows up here." />}
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+/* ---------- active workout ---------- */
+function WorkoutView({ db, ctx }) {
+  const { active, exercises, templates, settings, workouts } = db; const unit = settings.unit;
+  const exMap = useMemo(() => Object.fromEntries(exercises.map((e) => [e.id, e])), [exercises]);
+  const now = useNow(1000);
+  const [picker, setPicker] = useState(false); const [confirm, setConfirm] = useState(false); const [saved, setSaved] = useState(false);
+  if (!active) {
+    return (
+      <div>
+        <PageHeader title="Workout" sub="Log sets, track rest, hit finish." onSettings={() => ctx.setModal({ type: 'settings' })} />
+        <Card className="p-5 mb-4"><div className="flex flex-wrap items-center gap-3"><div className="flex-1 min-w-[10rem]"><div className="disp text-2xl font-semibold">Empty workout</div><div className="text-sm text-mute">Add exercises as you go.</div></div><button className={btnPrimary} onClick={() => ctx.startWorkout(null)}><Play size={18} /> Start</button></div></Card>
+        <h3 className="text-xs uppercase tracking-wider text-mute mb-2">Or load a saved plan</h3>
+        {templates.length ? <div className="grid md:grid-cols-2 gap-3">{templates.map((t) => (
+          <Card key={t.id} className="p-4 flex items-center gap-3"><div className="flex-1 min-w-0"><div className="font-semibold truncate">{t.name}</div><div className="text-xs text-mute truncate">{t.items.map((i) => exMap[i.exerciseId]?.name).filter(Boolean).join(' · ')}</div></div><button className={btnPrimary + ' !px-3.5'} onClick={() => ctx.startWorkout(t)}><Play size={16} /> Start</button></Card>))}</div>
+          : <Empty icon={ClipboardList} title="No saved plans" text="Build a workout in advance on the Plans tab." ><button className={btnGhost} onClick={() => ctx.setView('plan')}>Go to Plans</button></Empty>}
+      </div>
+    );
+  }
+  const setActive = (fn) => ctx.setDb((d) => ({ ...d, active: d.active && fn(d.active) }));
+  const doneSets = workoutSets(active), volume = workoutVolume(active);
+  const changeItem = (id, ni) => setActive((a) => ({ ...a, items: a.items.map((x) => (x.id === id ? ni : x)) }));
+  const addExercises = (ids) => setActive((a) => ({
+    ...a, items: [...a.items, ...ids.map((id) => {
+      const p = lastPerf(workouts, id);
+      return { id: uid(), exerciseId: id, sets: p ? p.map((s) => ({ id: uid(), weight: s.weight, reps: s.reps, done: false })) : Array.from({ length: 3 }, () => ({ id: uid(), weight: '', reps: '', done: false })) };
+    })],
+  }));
+  return (
+    <div>
+      <PageHeader title="Workout" onSettings={() => ctx.setModal({ type: 'settings' })} right={<button className={btnPrimary} disabled={!doneSets} onClick={ctx.finishWorkout}><Check size={18} /> Finish</button>} />
+      <Card className="p-4 mb-4">
+        <input id="wk-name" aria-label="Workout name" className="disp text-2xl font-semibold bg-transparent outline-none border-b border-transparent focus:border-accent w-full pb-1" value={active.name} onChange={(e) => setActive((a) => ({ ...a, name: e.target.value }))} />
+        <div className="grid grid-cols-3 gap-3 mt-3">
+          <div><div className="text-[11px] uppercase tracking-wider text-mute">Time</div><div className="disp text-2xl font-semibold num leading-tight">{fmtClock((now - active.start) / 1000)}</div></div>
+          <div><div className="text-[11px] uppercase tracking-wider text-mute">Volume</div><div className="disp text-2xl font-semibold num leading-tight">{fmtNum(volume)}<span className="text-sm text-mute ml-1">{unit}</span></div></div>
+          <div><div className="text-[11px] uppercase tracking-wider text-mute">Sets done</div><div className="disp text-2xl font-semibold num leading-tight">{doneSets}</div></div>
+        </div>
+      </Card>
+      <div className="grid gap-3">
+        {active.items.map((it, idx) => (
+          <ExerciseCard key={it.id} item={it} ex={exMap[it.exerciseId]} mode="live" unit={unit} prevSets={lastPerf(workouts, it.exerciseId)}
+            onChange={(ni) => changeItem(it.id, ni)} onDone={() => { unlockAudio(); ctx.startRest(); }}
+            onRemove={() => setActive((a) => ({ ...a, items: a.items.filter((x) => x.id !== it.id) }))} />
+        ))}
+      </div>
+      {!active.items.length && <Empty icon={Dumbbell} title="Add your first exercise" text="Pick from the database or create your own." />}
+      <button className={btnGhost + ' w-full mt-3 !py-3'} onClick={() => setPicker(true)}><Plus size={18} /> Add exercise</button>
+      <div className="flex flex-wrap gap-2 mt-3">
+        <button className={btnGhost + ' flex-1'} disabled={!active.items.length || saved} onClick={() => { ctx.saveAsTemplate(); setSaved(true); }}><Save size={16} /> {saved ? 'Saved as plan' : 'Save as plan'}</button>
+        {confirm ? <div className="flex-1 flex gap-2"><button className="flex-1 rounded-xl bg-red-500/90 text-white font-semibold px-3 py-2.5" onClick={ctx.discardWorkout}>Discard it</button><button className={btnGhost} onClick={() => setConfirm(false)}>Keep</button></div>
+          : <button className={btnGhost + ' flex-1 hover:!border-red-400'} onClick={() => setConfirm(true)}><Trash2 size={16} /> Discard workout</button>}
+      </div>
+      {!doneSets && active.items.length > 0 && <p className="text-xs text-faint mt-3 text-center">Mark at least one set complete to finish. Only completed sets are saved.</p>}
+      {picker && <ExercisePicker exercises={exercises} onClose={() => setPicker(false)} onAdd={addExercises} onCreate={ctx.addExercise} />}
+    </div>
+  );
+}
+
+/* ---------- plans ---------- */
+const DAYS = [['M', 1], ['T', 2], ['W', 3], ['T', 4], ['F', 5], ['S', 6], ['S', 0]];
+const DAY_NAMES = { 0: 'Sun', 1: 'Mon', 2: 'Tue', 3: 'Wed', 4: 'Thu', 5: 'Fri', 6: 'Sat' };
+
+function PlanView({ db, ctx }) {
+  const { templates, exercises, settings } = db; const unit = settings.unit;
+  const exMap = useMemo(() => Object.fromEntries(exercises.map((e) => [e.id, e])), [exercises]);
+  const [draft, setDraft] = useState(null); const [picker, setPicker] = useState(false); const [del, setDel] = useState(null);
+  if (draft) {
+    const setItems = (fn) => setDraft((d) => ({ ...d, items: fn(d.items) }));
+    const move = (i, dir) => setItems((l) => { const a = [...l], j = i + dir; if (j < 0 || j >= a.length) return a; [a[i], a[j]] = [a[j], a[i]]; return a; });
+    return (
+      <div>
+        <PageHeader title={draft.isNew ? 'New plan' : 'Edit plan'} onSettings={() => ctx.setModal({ type: 'settings' })} />
+        <Card className="p-4 mb-3">
+          <label htmlFor="plan-name" className="text-[11px] uppercase tracking-wider text-mute">Plan name</label>
+          <input id="plan-name" className={inputCls + ' mt-1 text-lg'} value={draft.name} placeholder="e.g. Upper body" onChange={(e) => setDraft({ ...draft, name: e.target.value })} />
+          <div className="text-[11px] uppercase tracking-wider text-mute mt-4 mb-1.5">Schedule on (optional)</div>
+          <div className="flex gap-1.5">{DAYS.map(([l, n], i) => <button key={i} aria-label={DAY_NAMES[n]} onClick={() => setDraft({ ...draft, day: draft.day === n ? null : n })} className={'h-10 flex-1 rounded-lg border text-sm font-medium ' + (draft.day === n ? 'bg-steel border-steel text-[#04202e]' : 'bg-surf2 border-line text-mute')}>{l}</button>)}</div>
+        </Card>
+        <div className="grid gap-3">
+          {draft.items.map((it, i) => <ExerciseCard key={it.id} item={it} ex={exMap[it.exerciseId]} mode="plan" unit={unit} onMove={(dir) => move(i, dir)} onChange={(ni) => setItems((l) => l.map((x) => (x.id === it.id ? ni : x)))} onRemove={() => setItems((l) => l.filter((x) => x.id !== it.id))} />)}
+        </div>
+        <p className="text-xs text-faint mt-3">Weights and reps here are targets. Leave a field empty and it fills from your last session.</p>
+        <button className={btnGhost + ' w-full mt-3 !py-3'} onClick={() => setPicker(true)}><Plus size={18} /> Add exercise</button>
+        <div className="flex gap-2 mt-3">
+          <button className={btnPrimary + ' flex-1'} disabled={!draft.name.trim() || !draft.items.length} onClick={() => { ctx.saveTemplate({ ...draft, isNew: undefined, name: draft.name.trim() }); setDraft(null); }}><Save size={17} /> Save plan</button>
+          <button className={btnGhost} onClick={() => setDraft(null)}>Cancel</button>
+        </div>
+        {picker && <ExercisePicker exercises={exercises} onClose={() => setPicker(false)} onCreate={ctx.addExercise}
+          onAdd={(ids) => setItems((l) => [...l, ...ids.map((id) => { const p = lastPerf(db.workouts, id); return { id: uid(), exerciseId: id, sets: p ? p.map((s) => ({ id: uid(), weight: s.weight, reps: s.reps })) : Array.from({ length: 3 }, () => ({ id: uid(), weight: '', reps: '' })) }; })])} />}
+      </div>
+    );
+  }
+  return (
+    <div>
+      <PageHeader title="Plans" sub="Build workouts ahead of time, then start them in one tap." onSettings={() => ctx.setModal({ type: 'settings' })} right={<button className={btnPrimary} onClick={() => setDraft({ id: uid(), isNew: true, name: '', day: null, items: [] })}><Plus size={18} /> New</button>} />
+      {templates.length ? (
+        <div className="grid md:grid-cols-2 gap-3">
+          {templates.map((t) => {
+            const sets = t.items.reduce((a, i) => a + i.sets.length, 0);
+            return (
+              <Card key={t.id} className="p-4 flex flex-col">
+                <div className="flex items-start justify-between gap-2"><div className="min-w-0"><div className="disp text-2xl font-semibold leading-tight truncate">{t.name}</div><div className="text-xs text-mute mt-0.5">{t.items.length} exercises · {sets} sets</div></div>
+                  {t.day != null && <Pill className="!text-steel !border-steel/40 shrink-0"><CalendarDays size={11} className="inline -mt-0.5 mr-1" />{DAY_NAMES[t.day]}</Pill>}</div>
+                <ul className="mt-3 text-sm text-mute grid gap-1 flex-1">{t.items.slice(0, 5).map((i) => <li key={i.id} className="flex justify-between gap-2"><span className="truncate">{exMap[i.exerciseId]?.name || 'Unknown'}</span><span className="num text-faint shrink-0">{i.sets.length}×{i.sets[0]?.reps || '–'}</span></li>)}{t.items.length > 5 && <li className="text-faint">+{t.items.length - 5} more</li>}</ul>
+                <div className="flex gap-2 mt-4">
+                  <button className={btnPrimary + ' flex-1'} disabled={!!db.active} onClick={() => ctx.startWorkout(t)}><Play size={16} /> {db.active ? 'Workout running' : 'Start'}</button>
+                  <button aria-label="Edit plan" className={btnGhost + ' !px-3'} onClick={() => setDraft({ ...t, items: t.items.map((i) => ({ ...i, sets: i.sets.map((s) => ({ ...s })) })) })}><Pencil size={16} /></button>
+                  <button aria-label="Duplicate plan" className={btnGhost + ' !px-3'} onClick={() => ctx.saveTemplate({ ...t, id: uid(), name: t.name + ' copy', day: null, sample: undefined, items: t.items.map((i) => ({ ...i, id: uid(), sets: i.sets.map((s) => ({ ...s, id: uid() })) })) })}><Copy size={16} /></button>
+                  {del === t.id ? <button className="rounded-xl bg-red-500/90 text-white font-semibold px-3" onClick={() => { ctx.deleteTemplate(t.id); setDel(null); }}>Delete?</button>
+                    : <button aria-label="Delete plan" className={btnGhost + ' !px-3 hover:!border-red-400'} onClick={() => { setDel(t.id); setTimeout(() => setDel(null), 3000); }}><Trash2 size={16} /></button>}
+                </div>
+              </Card>
+            );
+          })}
+        </div>
+      ) : <Card><Empty icon={ClipboardList} title="No plans yet" text="Create a workout, choose a day if you like, and it waits here until you need it."><button className={btnPrimary + ' mt-2'} onClick={() => setDraft({ id: uid(), isNew: true, name: '', day: null, items: [] })}><Plus size={18} /> Create a plan</button></Empty></Card>}
+    </div>
+  );
+}
+
+/* ---------- exercise database ---------- */
+function ExercisesView({ db, ctx }) {
+  const { exercises, workouts } = db; const unit = db.settings.unit;
+  const [q, setQ] = useState(''); const [mu, setMu] = useState('All'); const [adding, setAdding] = useState(false);
+  const [nn, setNn] = useState(''); const [nm, setNm] = useState('Chest'); const [del, setDel] = useState(null);
+  const stats = useMemo(() => {
+    const s = {};
+    sortedW(workouts).forEach((w) => w.items.forEach((it) => { const e = s[it.exerciseId] || (s[it.exerciseId] = { n: 0, best: 0, last: 0 }); e.n++; e.last = w.start; it.sets.forEach((x) => { e.best = Math.max(e.best, e1rm(x.weight, x.reps)); }); }));
+    return s;
+  }, [workouts]);
+  const list = exercises.filter((e) => (mu === 'All' || e.muscle === mu) && e.name.toLowerCase().includes(q.toLowerCase()));
+  const groups = MUSCLES.map((m) => [m, list.filter((e) => e.muscle === m).sort((a, b) => a.name.localeCompare(b.name))]).filter(([, l]) => l.length);
+  const create = () => { if (!nn.trim()) return; ctx.addExercise({ id: uid(), name: nn.trim(), muscle: nm, custom: true }); setNn(''); setAdding(false); };
+  return (
+    <div>
+      <PageHeader title="Exercises" sub={`${exercises.length} in your database`} onSettings={() => ctx.setModal({ type: 'settings' })} right={<button className={btnPrimary} onClick={() => setAdding(!adding)}><Plus size={18} /> Custom</button>} />
+      {adding && (
+        <Card className="p-4 mb-4 grid gap-2 pop">
+          <label htmlFor="ex-new" className="text-[11px] uppercase tracking-wider text-mute">New exercise</label>
+          <input id="ex-new" className={inputCls} placeholder="e.g. Cable Lateral Raise" value={nn} onChange={(e) => setNn(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && create()} autoFocus />
+          <select id="ex-muscle" aria-label="Muscle group" className={inputCls} value={nm} onChange={(e) => setNm(e.target.value)}>{MUSCLES.map((m) => <option key={m}>{m}</option>)}</select>
+          <div className="flex gap-2"><button className={btnPrimary + ' flex-1'} onClick={create}>Add to database</button><button className={btnGhost} onClick={() => setAdding(false)}>Cancel</button></div>
+        </Card>
+      )}
+      <div className="relative mb-3"><Search size={16} className="absolute left-3 top-3 text-faint" /><input id="ex-q" aria-label="Search exercises" className={inputCls + ' pl-9'} placeholder="Search exercises" value={q} onChange={(e) => setQ(e.target.value)} /></div>
+      <div className="flex gap-1.5 overflow-x-auto pb-3">{['All', ...MUSCLES].map((m) => <button key={m} onClick={() => setMu(m)} className={'shrink-0 rounded-full px-3 py-1 text-sm border ' + (mu === m ? 'bg-accent border-accent text-[#1a0d05] font-semibold' : 'bg-surf border-line text-mute')}>{m}</button>)}</div>
+      {groups.map(([m, l]) => (
+        <div key={m} className="mb-4">
+          <h3 className="text-xs uppercase tracking-wider text-mute mb-1.5">{m} <span className="text-faint">· {l.length}</span></h3>
+          <Card className="divide-y divide-line">
+            {l.map((e) => {
+              const s = stats[e.id];
+              return (
+                <div key={e.id} className="flex items-center gap-2 pr-2">
+                  <button onClick={() => s && ctx.openProgress(e.id)} className="flex-1 min-w-0 text-left px-4 py-3">
+                    <div className="font-medium truncate">{e.name}{e.custom && <span className="ml-2 text-[10px] uppercase tracking-wider text-steel">custom</span>}</div>
+                    <div className="text-xs text-mute num">{s ? `Best est. 1RM ${Math.round(s.best)} ${unit} · ${s.n} session${s.n > 1 ? 's' : ''} · ${relDate(s.last)}` : 'Not logged yet'}</div>
+                  </button>
+                  {s && <TrendingUp size={16} className="text-faint shrink-0" />}
+                  {e.custom && (del === e.id ? <button className="rounded-lg bg-red-500/90 text-white text-sm px-2.5 py-1.5" onClick={() => { ctx.deleteExercise(e.id); setDel(null); }}>Delete?</button>
+                    : <button aria-label={'Delete ' + e.name} className="h-8 w-8 grid place-items-center text-faint hover:text-red-400" onClick={() => { setDel(e.id); setTimeout(() => setDel(null), 3000); }}><Trash2 size={15} /></button>)}
+                </div>
+              );
+            })}
+          </Card>
+        </div>
+      ))}
+      {!groups.length && <Card><Empty icon={Search} title="No exercises match" text="Try a different search, or add it as a custom exercise." /></Card>}
+    </div>
+  );
+}
+
+/* ---------- progress ---------- */
+function ProgressView({ db, ctx }) {
+  const { workouts, exercises, settings } = db; const unit = settings.unit;
+  const [tab, setTab] = useState(ctx.focus.histId ? 'History' : 'Charts'); const [range, setRange] = useState('8W');
+  const [exId, setExId] = useState(ctx.focus.exId || null); const [metric, setMetric] = useState('Est. 1RM'); const [prAll, setPrAll] = useState(false);
+  const exMap = useMemo(() => Object.fromEntries(exercises.map((e) => [e.id, e])), [exercises]);
+  const nW = { '4W': 4, '8W': 8, '12W': 12, All: 26 }[range];
+  const sorted = useMemo(() => sortedW(workouts), [workouts]);
+  const wkRows = useMemo(() => {
+    let rows = weeksBack(nW);
+    if (range === 'All' && sorted.length) { const first = startOfWeek(sorted[0].start).getTime(); rows = rows.filter((r) => r.s >= first); }
+    return rows;
+  }, [nW, range, sorted]);
+  const cutoff = wkRows.length ? wkRows[0].s : 0;
+  const rw = sorted.filter((w) => w.start >= cutoff);
+  const totalVol = rw.reduce((a, w) => a + workoutVolume(w), 0), totalSets = rw.reduce((a, w) => a + workoutSets(w), 0);
+  const avgDur = rw.length ? rw.reduce((a, w) => a + (w.end - w.start) / 60000, 0) / rw.length : 0;
+
+  const counts = {}; sorted.forEach((w) => w.items.forEach((i) => { counts[i.exerciseId] = (counts[i.exerciseId] || 0) + 1; }));
+  const withHist = exercises.filter((e) => counts[e.id]).sort((a, b) => counts[b.id] - counts[a.id]);
+  const selEx = exId && counts[exId] ? exId : withHist[0]?.id;
+  const metricFn = { 'Est. 1RM': (it) => Math.max(0, ...it.sets.map((s) => e1rm(s.weight, s.reps))), 'Top weight': (it) => Math.max(0, ...it.sets.map((s) => +s.weight || 0)), Volume: (it) => it.sets.reduce((a, s) => a + setVol(s), 0) }[metric];
+  const exData = sorted.filter((w) => w.start >= cutoff).map((w) => { const it = w.items.find((i) => i.exerciseId === selEx); return it ? { label: fmtShort(w.start), tip: fmtDate(w.start) + ' · ' + w.name, value: Math.round(metricFn(it) * 10) / 10 } : null; }).filter(Boolean);
+  const first = exData[0], lastP = exData[exData.length - 1];
+  const gain = first && lastP && first.value > 0 ? Math.round(((lastP.value - first.value) / first.value) * 100) : null;
+
+  const muscleSets = {}; rw.forEach((w) => w.items.forEach((it) => { const m = exMap[it.exerciseId]?.muscle; if (m) muscleSets[m] = (muscleSets[m] || 0) + it.sets.filter((s) => s.done).length; }));
+  const mRows = Object.entries(muscleSets).sort((a, b) => b[1] - a[1]), mMax = Math.max(1, ...mRows.map((r) => r[1]));
+
+  const prs = useMemo(() => {
+    const out = [];
+    exercises.forEach((e) => { let best = null; sorted.forEach((w) => w.items.forEach((it) => { if (it.exerciseId !== e.id) return; it.sets.forEach((s) => { const v = e1rm(s.weight, s.reps); if (v > 0 && (!best || v > best.v + 1e-9)) best = { v, s, at: w.start }; }); })); if (best) out.push({ e, ...best }); });
+    return out.sort((a, b) => b.at - a.at);
+  }, [sorted, exercises]);
+
+  // history
+  const hist = [...workouts].sort((a, b) => b.start - a.start);
+  const [open, setOpen] = useState(ctx.focus.histId || null); const [del, setDel] = useState(null);
+  const prevSame = (w) => { for (let i = sorted.length - 1; i >= 0; i--) if (sorted[i].start < w.start && sorted[i].name === w.name) return sorted[i]; return null; };
+  useEffect(() => { if (ctx.focus.histId) setTimeout(() => document.getElementById('h-' + ctx.focus.histId)?.scrollIntoView({ block: 'center' }), 80); }, []);
+
+  const wkVol = wkRows.map((wk) => ({ label: wk.label, tip: 'Week of ' + wk.label, value: inWeek(sorted, wk).reduce((a, w) => a + workoutVolume(w), 0) }));
+  const wkCnt = wkRows.map((wk) => ({ label: wk.label, tip: 'Week of ' + wk.label, value: inWeek(sorted, wk).length }));
+  const perWorkout = rw.slice(-24).map((w) => ({ label: fmtShort(w.start), tip: fmtDate(w.start) + ' · ' + w.name, value: workoutVolume(w) }));
+  const durData = rw.slice(-24).map((w) => ({ label: fmtShort(w.start), tip: fmtDate(w.start) + ' · ' + w.name, value: Math.round((w.end - w.start) / 60000) }));
+
+  return (
+    <div>
+      <PageHeader title="Progress" sub="Volume up, over time. That's progressive overload." onSettings={() => ctx.setModal({ type: 'settings' })} right={<Seg value={tab} options={['Charts', 'History']} onChange={setTab} />} />
+      {!workouts.length ? <Card><Empty icon={BarChart3} title="Nothing to chart yet" text="Finish a workout and your graphs appear here." /></Card> : tab === 'Charts' ? (
+        <div className="grid gap-4">
+          <div className="flex items-center justify-between gap-3"><span className="text-sm text-mute">Range</span><Seg value={range} options={['4W', '8W', '12W', 'All']} onChange={setRange} /></div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <Tile label="Workouts" value={rw.length} sub={`${wkRows.length} weeks`} />
+            <Tile label="Total volume" value={compact(totalVol)} sub={unit} />
+            <Tile label="Sets completed" value={fmtNum(totalSets)} sub={rw.length ? `${(totalSets / rw.length).toFixed(1)} per workout` : ''} />
+            <Tile label="Avg duration" value={fmtMin(avgDur)} sub="per session" />
+          </div>
+          <ChartCard title="Strength progression" sub={gain != null ? `${selEx && exMap[selEx]?.name}: ${gain >= 0 ? '+' : ''}${gain}% over this range` : 'Pick an exercise'}
+            right={<div className="flex flex-wrap gap-2 items-center"><select id="pg-ex" aria-label="Exercise" className="rounded-lg bg-surf2 border border-line px-2.5 py-1.5 text-sm max-w-[11rem]" value={selEx || ''} onChange={(e) => setExId(e.target.value)}>{withHist.map((e) => <option key={e.id} value={e.id}>{e.name}</option>)}</select><Seg value={metric} options={['Est. 1RM', 'Top weight', 'Volume']} onChange={setMetric} /></div>}>
+            <LineChart data={exData} unit={unit} zeroBase={metric === 'Volume'} fmt={(v) => (metric === 'Volume' ? fmtNum(v) : v)} />
+            <p className="text-xs text-faint mt-2">{metric === 'Est. 1RM' ? 'Estimated one-rep max from your best set each session (Epley formula).' : metric === 'Top weight' ? 'Heaviest completed set each session.' : 'Total weight × reps for this exercise each session.'}</p>
+          </ChartCard>
+          <div className="grid lg:grid-cols-2 gap-4">
+            <ChartCard title="Volume per workout" sub={`Total ${unit} per session, latest ${perWorkout.length}`}><BarChart data={perWorkout} unit={unit} /></ChartCard>
+            <ChartCard title="Weekly volume" sub={`Total ${unit} per week`}><BarChart data={wkVol} unit={unit} /></ChartCard>
+            <ChartCard title="Weekly consistency" sub="Workouts per week against your goal"><BarChart data={wkCnt} goal={settings.goal} color="#4cc2ff" yFmt={(v) => String(v)} unit="workouts" /></ChartCard>
+            <ChartCard title="Session length" sub="Minutes per workout"><LineChart data={durData} color="#4cc2ff" unit="min" /></ChartCard>
+          </div>
+          <ChartCard title="Training calendar" sub="Each square is a day, shaded by volume"><Heatmap workouts={sorted} /></ChartCard>
+          <div className="grid lg:grid-cols-2 gap-4">
+            <ChartCard title="Sets by muscle group" sub="Completed sets in this range">
+              {mRows.length ? <div className="grid gap-2.5">{mRows.map(([m, n]) => (
+                <div key={m} className="flex items-center gap-3 text-sm"><span className="w-20 text-mute shrink-0">{m}</span><div className="flex-1 h-2.5 rounded-r-md rounded-l-sm bg-surf2 overflow-hidden"><div className="h-full bg-accent rounded-r-md" style={{ width: (n / mMax) * 100 + '%' }} /></div><span className="w-8 text-right num font-semibold">{n}</span></div>))}</div>
+                : <div className="text-mute text-sm py-6 text-center">No sets in this range.</div>}
+            </ChartCard>
+            <ChartCard title="Personal records" sub="Best estimated 1RM per exercise">
+              <div className="divide-y divide-line">{(prAll ? prs : prs.slice(0, 6)).map((p) => (
+                <div key={p.e.id} className="flex items-center gap-3 py-2"><Trophy size={15} className="text-accent shrink-0" /><div className="flex-1 min-w-0"><div className="text-sm font-medium truncate">{p.e.name}</div><div className="text-xs text-faint">{fmtShort(p.at)}</div></div><div className="text-right num"><div className="font-semibold">{p.s.weight} × {p.s.reps}</div><div className="text-xs text-mute">≈ {Math.round(p.v)} {unit}</div></div></div>))}</div>
+              {prs.length > 6 && <button className="text-sm text-accent mt-2" onClick={() => setPrAll(!prAll)}>{prAll ? 'Show fewer' : `Show all ${prs.length}`}</button>}
+            </ChartCard>
+          </div>
+        </div>
+      ) : (
+        <div className="grid gap-2.5">
+          {hist.map((w, idx) => {
+            const v = workoutVolume(w), p = prevSame(w), pv = p ? workoutVolume(p) : 0, dl = pv > 0 ? Math.round(((v - pv) / pv) * 100) : null, isOpen = open === w.id;
+            const showMonth = idx === 0 || new Date(hist[idx - 1].start).getMonth() !== new Date(w.start).getMonth();
+            return (
+              <React.Fragment key={w.id}>
+                {showMonth && <h3 className="text-xs uppercase tracking-wider text-mute mt-2">{new Date(w.start).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}</h3>}
+                <Card className="overflow-hidden" >
+                  <button id={'h-' + w.id} onClick={() => setOpen(isOpen ? null : w.id)} className="w-full text-left p-4 flex items-center gap-3">
+                    <div className="flex-1 min-w-0"><div className="font-semibold truncate">{w.name}</div><div className="text-xs text-mute">{fmtDate(w.start)} · {fmtMin((w.end - w.start) / 60000)} · {workoutSets(w)} sets</div></div>
+                    <div className="text-right"><div className="disp text-2xl font-semibold num leading-none">{fmtNum(v)}</div><div className="text-[11px] text-faint">{unit}{dl != null && <span className={'ml-1.5 ' + (dl >= 0 ? 'text-ok' : 'text-mute')}>{dl >= 0 ? '▲' : '▼'} {Math.abs(dl)}%</span>}</div></div>
+                    {isOpen ? <ChevronUp size={18} className="text-faint" /> : <ChevronDown size={18} className="text-faint" />}
+                  </button>
+                  {isOpen && (
+                    <div className="px-4 pb-4 border-t border-line pt-3 grid gap-3 pop">
+                      {w.items.map((it) => (
+                        <div key={it.id}><div className="text-sm font-medium">{exMap[it.exerciseId]?.name || 'Unknown'}</div>
+                          <div className="flex flex-wrap gap-1.5 mt-1.5">{it.sets.map((s) => <span key={s.id} className="rounded-md bg-surf2 border border-line px-2 py-0.5 text-sm num">{s.weight} × {s.reps}</span>)}</div></div>))}
+                      <div className="flex justify-end">{del === w.id ? <button className="rounded-lg bg-red-500/90 text-white text-sm px-3 py-1.5" onClick={() => { ctx.deleteWorkout(w.id); setDel(null); }}>Delete this workout?</button>
+                        : <button className="text-sm text-faint hover:text-red-400 flex items-center gap-1.5" onClick={() => { setDel(w.id); setTimeout(() => setDel(null), 3000); }}><Trash2 size={14} /> Delete</button>}</div>
+                    </div>
+                  )}
+                </Card>
+              </React.Fragment>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ---------- settings + summary ---------- */
+function SettingsSheet({ db, ctx, onClose }) {
+  const { settings } = db; const [txt, setTxt] = useState(''); const [msg, setMsg] = useState(''); const [reset, setReset] = useState(false);
+  const set = (p) => ctx.setDb((d) => ({ ...d, settings: { ...d.settings, ...p } }));
+  const Step = ({ value, min, max, step, onChange, fmt }) => (
+    <div className="inline-flex items-center gap-2"><button aria-label="Decrease" className="h-9 w-9 rounded-lg bg-surf2 border border-line grid place-items-center" onClick={() => onChange(Math.max(min, value - step))}><Minus size={15} /></button><span className="w-16 text-center num font-semibold">{fmt ? fmt(value) : value}</span><button aria-label="Increase" className="h-9 w-9 rounded-lg bg-surf2 border border-line grid place-items-center" onClick={() => onChange(Math.min(max, value + step))}><Plus size={15} /></button></div>
+  );
+  const copy = async () => { const json = JSON.stringify(db); try { await navigator.clipboard.writeText(json); setMsg('Backup copied. Paste it somewhere safe.'); } catch (e) { setTxt(json); setMsg('Copy blocked here. Select the text below and copy it manually.'); } };
+  const restore = () => { try { const d = JSON.parse(txt); if (!Array.isArray(d.exercises) || !Array.isArray(d.workouts)) throw 0; ctx.setDb({ templates: [], active: null, rest: null, ...d, settings: { unit: 'kg', rest: 90, goal: 4, ...(d.settings || {}) } }); setMsg('Backup restored.'); setTxt(''); } catch (e) { setMsg('That text is not a valid Setlog backup.'); } };
+  return (
+    <Sheet title="Settings" onClose={onClose}>
+      <div className="grid gap-4">
+        <div className="flex items-center justify-between gap-3"><div><div className="font-medium">Rest timer</div><div className="text-xs text-mute">Starts when you complete a set</div></div><Step value={settings.rest} min={15} max={600} step={15} onChange={(v) => set({ rest: v })} fmt={fmtClock} /></div>
+        <div className="flex items-center justify-between gap-3"><div><div className="font-medium">Weekly goal</div><div className="text-xs text-mute">Workouts per week</div></div><Step value={settings.goal} min={1} max={7} step={1} onChange={(v) => set({ goal: v })} /></div>
+        <div className="flex items-center justify-between gap-3"><div><div className="font-medium">Weight unit</div><div className="text-xs text-mute">Label only. Logged numbers are not converted.</div></div><Seg value={settings.unit} options={['kg', 'lb']} onChange={(v) => set({ unit: v })} /></div>
+        <div className="border-t border-line pt-4">
+          <div className="font-medium mb-2">Backup</div>
+          <div className="flex gap-2 mb-2"><button className={btnGhost + ' flex-1'} onClick={copy}><Copy size={15} /> Copy backup</button><button className={btnGhost + ' flex-1'} disabled={!txt.trim()} onClick={restore}>Restore pasted</button></div>
+          <textarea id="backup-txt" aria-label="Backup text" rows="3" className={inputCls + ' text-xs'} placeholder="Paste a backup here to restore it" value={txt} onChange={(e) => setTxt(e.target.value)} />
+          {msg && <p className="text-xs text-mute mt-1.5">{msg}</p>}
+        </div>
+        <div className="border-t border-line pt-4 grid gap-2">
+          {(db.workouts.some((w) => w.sample) || db.templates.some((t) => t.sample)) ? <button className={btnGhost} onClick={() => { ctx.clearSample(); onClose(); }}>Clear sample data</button> : <button className={btnGhost} onClick={ctx.loadSample}>Add sample data</button>}
+          {reset ? <button className="rounded-xl bg-red-500/90 text-white font-semibold px-4 py-2.5" onClick={() => { ctx.resetAll(); onClose(); }}>Yes, erase everything</button> : <button className={btnGhost + ' hover:!border-red-400'} onClick={() => setReset(true)}>Reset all data</button>}
+        </div>
+      </div>
+    </Sheet>
+  );
+}
+
+function SummarySheet({ data, db, onClose }) {
+  const { workout: w, prs } = data; const unit = db.settings.unit;
+  const exMap = Object.fromEntries(db.exercises.map((e) => [e.id, e]));
+  return (
+    <Sheet title="Workout saved" onClose={onClose}>
+      <div className="text-center py-2"><div className="h-14 w-14 mx-auto rounded-full bg-ok/15 text-ok grid place-items-center"><Check size={28} /></div><div className="disp text-3xl font-semibold mt-2">{w.name}</div></div>
+      <div className="grid grid-cols-3 gap-2 my-4">
+        {[['Time', fmtMin((w.end - w.start) / 60000)], ['Volume', fmtNum(workoutVolume(w)) + ' ' + unit], ['Sets', workoutSets(w)]].map(([l, v]) => <div key={l} className="rounded-xl bg-surf2 border border-line p-3 text-center"><div className="text-[11px] uppercase tracking-wider text-mute">{l}</div><div className="disp text-xl font-semibold num">{v}</div></div>)}
+      </div>
+      {prs.length > 0 && <div className="rounded-xl border border-accent/40 bg-accent/10 p-3 mb-4"><div className="flex items-center gap-2 font-semibold text-accent mb-1"><Trophy size={16} /> New personal record{prs.length > 1 ? 's' : ''}</div>{prs.map((p) => <div key={p.exerciseId} className="text-sm flex justify-between"><span>{exMap[p.exerciseId]?.name}</span><span className="num text-mute">est. 1RM {Math.round(p.value)} {unit}</span></div>)}</div>}
+      <button className={btnPrimary + ' w-full'} onClick={onClose}>Done</button>
+    </Sheet>
+  );
+}
+
+/* ---------- app shell ---------- */
+const NAV = [['home', 'Home', LayoutDashboard], ['workout', 'Workout', Dumbbell], ['plan', 'Plans', ClipboardList], ['exercises', 'Exercises', ListChecks], ['progress', 'Progress', TrendingUp]];
+
+function App() {
+  const [db, setDb] = useState(loadDb); const [view, setView] = useState('home'); const [modal, setModal] = useState(null); const [focus, setFocus] = useState({});
+  useEffect(() => { saveDb(db); }, [db]);
+  useEffect(() => { window.scrollTo(0, 0); }, [view]);
+
+  const ctx = {
+    db, setDb, setView, setModal, focus,
+    openHistory: (id) => { setFocus({ histId: id }); setView('progress'); },
+    openProgress: (exId) => { setFocus({ exId }); setView('progress'); },
+    addExercise: (ex) => setDb((d) => ({ ...d, exercises: [...d.exercises, ex] })),
+    deleteExercise: (id) => setDb((d) => ({ ...d, exercises: d.exercises.filter((e) => e.id !== id) })),
+    startRest: () => setDb((d) => (d.settings.rest > 0 ? { ...d, rest: { end: Date.now() + d.settings.rest * 1000, total: d.settings.rest * 1000 } } : d)),
+    startWorkout: (tpl) => {
+      setDb((d) => {
+        if (d.active) return d;
+        const h = new Date().getHours(), nm = (h < 12 ? 'Morning' : h < 18 ? 'Afternoon' : 'Evening') + ' workout';
+        return { ...d, active: { id: uid(), name: tpl ? tpl.name : nm, start: Date.now(), templateId: tpl ? tpl.id : null, items: tpl ? tpl.items.map((it) => ({ id: uid(), exerciseId: it.exerciseId, sets: it.sets.map((s) => ({ id: uid(), weight: s.weight, reps: s.reps, done: false })) })) : [] } };
+      });
+      setView('workout');
+    },
+    discardWorkout: () => { setDb((d) => ({ ...d, active: null, rest: null })); setView('home'); },
+    finishWorkout: () => {
+      const a = db.active; if (!a) return;
+      const items = a.items.map((it) => ({ ...it, sets: it.sets.filter((s) => s.done).map((s) => ({ ...s, weight: +s.weight || 0, reps: +s.reps || 0 })) })).filter((it) => it.sets.length);
+      if (!items.length) return;
+      const w = { id: a.id, name: a.name.trim() || 'Workout', start: a.start, end: Date.now(), items };
+      const prs = [];
+      items.forEach((it) => { const prev = bestE1rm(db.workouts, it.exerciseId), cur = Math.max(...it.sets.map((s) => e1rm(s.weight, s.reps))); if (prev > 0 && cur > prev + 0.001) prs.push({ exerciseId: it.exerciseId, value: cur }); });
+      setDb((d) => ({ ...d, workouts: [...d.workouts, w], active: null, rest: null }));
+      setModal({ type: 'summary', workout: w, prs });
+      setView('home');
+    },
+    saveAsTemplate: () => setDb((d) => d.active ? { ...d, templates: [...d.templates, { id: uid(), name: d.active.name || 'Workout', day: null, items: d.active.items.map((it) => ({ id: uid(), exerciseId: it.exerciseId, sets: it.sets.map((s) => ({ id: uid(), weight: s.weight, reps: s.reps })) })) }] } : d),
+    saveTemplate: (t) => setDb((d) => ({ ...d, templates: d.templates.some((x) => x.id === t.id) ? d.templates.map((x) => (x.id === t.id ? t : x)) : [...d.templates, t] })),
+    deleteTemplate: (id) => setDb((d) => ({ ...d, templates: d.templates.filter((t) => t.id !== id) })),
+    deleteWorkout: (id) => setDb((d) => ({ ...d, workouts: d.workouts.filter((w) => w.id !== id) })),
+    clearSample: () => setDb((d) => ({ ...d, workouts: d.workouts.filter((w) => !w.sample), templates: d.templates.filter((t) => !t.sample) })),
+    loadSample: () => setDb((d) => { const s = makeSample(); return { ...d, workouts: [...d.workouts, ...s.workouts], templates: [...d.templates, ...s.templates], exercises: [...DEFAULT_EX.filter((e) => !d.exercises.some((x) => x.id === e.id)), ...d.exercises] }; }),
+    resetAll: () => { setDb({ exercises: DEFAULT_EX, templates: [], workouts: [], active: null, rest: null, settings: { unit: 'kg', rest: 90, goal: 4 } }); setView('home'); },
+  };
+
+  const page = view === 'home' ? <Dashboard db={db} ctx={ctx} /> : view === 'workout' ? <WorkoutView db={db} ctx={ctx} /> : view === 'plan' ? <PlanView db={db} ctx={ctx} /> : view === 'exercises' ? <ExercisesView db={db} ctx={ctx} /> : <ProgressView key={JSON.stringify(focus)} db={db} ctx={ctx} />;
+  return (
+    <div className="min-h-screen">
+      <aside className="hidden md:flex fixed inset-y-0 left-0 w-56 flex-col border-r border-line bg-surf px-3 py-5">
+        <div className="flex items-center gap-2.5 px-3 mb-6"><div className="h-9 w-9 rounded-xl bg-accent text-[#1a0d05] grid place-items-center"><Dumbbell size={20} /></div><span className="disp text-3xl font-semibold">Setlog</span></div>
+        <nav className="grid gap-1">{NAV.map(([k, l, I]) => (
+          <button key={k} onClick={() => setView(k)} className={'flex items-center gap-3 rounded-xl px-3 py-2.5 text-left transition ' + (view === k ? 'bg-surf2 text-ink' : 'text-mute hover:text-ink hover:bg-surf2/60')}>
+            <I size={19} className={view === k ? 'text-accent' : ''} /><span className="font-medium">{l}</span>{k === 'workout' && db.active && <span className="ml-auto h-2 w-2 rounded-full bg-accent" />}
+          </button>))}</nav>
+      </aside>
+      <main className="md:pl-56">
+        <div className="mx-auto max-w-5xl px-4 md:px-8 pt-5 md:pt-8 pb-40 md:pb-32">{page}</div>
+      </main>
+      <nav className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-surf/95 backdrop-blur border-t border-line grid grid-cols-5 pb-[env(safe-area-inset-bottom,0px)]">
+        {NAV.map(([k, l, I]) => (
+          <button key={k} onClick={() => setView(k)} className={'relative flex flex-col items-center gap-0.5 pt-2.5 pb-2 text-[11px] ' + (view === k ? 'text-accent' : 'text-mute')}>
+            <I size={21} />{l}{k === 'workout' && db.active && <span className="absolute top-2 right-[28%] h-2 w-2 rounded-full bg-accent" />}
+          </button>))}
+      </nav>
+      {db.rest && <RestBar rest={db.rest} setDb={setDb} />}
+      {modal && modal.type === 'settings' && <SettingsSheet db={db} ctx={ctx} onClose={() => setModal(null)} />}
+      {modal && modal.type === 'summary' && <SummarySheet data={modal} db={db} onClose={() => setModal(null)} />}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
