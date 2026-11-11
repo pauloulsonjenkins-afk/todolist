@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Brighton Despatch</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&display=swap">
+<style>
+/* Layout: one-screen control room. Header strip, map with unit board beneath, call queue down the right (stacked on phones). */
+:root{
+  --bg:#e9edf2; --surface:#ffffff; --surface2:#f3f5f9; --ink:#0f1b2d; --mute:#566275; --line:#cfd6e0;
+  --accent:#1257c7; --accent-ink:#ffffff; --batt:#f5d000; --batt-ink:#0f1b2d;
+  --imm:#c8102e; --imm-bg:#fde7ea; --pri:#b86a00; --pri-bg:#fdf0d8; --asb:#3d5a80; --asb-bg:#e3ebf5;
+  --good:#16794a; --good-bg:#e0f3e8; --ok:#b86a00; --ok-bg:#fdf0d8; --bad:#c8102e; --bad-bg:#fde7ea;
+  --free:#16794a; --route:#1257c7; --scene:#7a8598;
+  --land:#e4e7df; --block:#d5d9d0; --road:#ffffff; --casing:#b4bcc8; --sea:#a7cde6; --beach:#ead9a6; --park:#bcdcab; --rail:#8a93a0; --maptext:#5b6678;
+  --t-taser:#f5d000; --t-dog:#e8944a; --t-traffic:#3fc1b0; --t-double:#7db2ff; --t-single:#d5dce8; --t-ink:#0f1b2d;
+  --shadow:0 6px 24px rgba(15,27,45,.18);
+  --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --body:"Barlow","Segoe UI",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0a111e; --surface:#131c2e; --surface2:#1a2540; --ink:#e7edf6; --mute:#93a0b6; --line:#27344e;
+  --accent:#6ea3ff; --accent-ink:#081120; --batt:#f5d000; --batt-ink:#0f1b2d;
+  --imm:#ff6b7f; --imm-bg:#3a1520; --pri:#ffb347; --pri-bg:#3a2a10; --asb:#9db8e0; --asb-bg:#1c2a44;
+  --good:#5ad198; --good-bg:#12301f; --ok:#ffb347; --ok-bg:#3a2a10; --bad:#ff6b7f; --bad-bg:#3a1520;
+  --free:#5ad198; --route:#6ea3ff; --scene:#8794ab;
+  --land:#172238; --block:#1e2b45; --road:#3a4a68; --casing:#0c1424; --sea:#0b2c4a; --beach:#4b442c; --park:#1c3a2b; --rail:#55627a; --maptext:#8f9cb3;
+  --shadow:0 6px 24px rgba(0,0,0,.5); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0a111e; --surface:#131c2e; --surface2:#1a2540; --ink:#e7edf6; --mute:#93a0b6; --line:#27344e;
+  --accent:#6ea3ff; --accent-ink:#081120; --batt:#f5d000; --batt-ink:#0f1b2d;
+  --imm:#ff6b7f; --imm-bg:#3a1520; --pri:#ffb347; --pri-bg:#3a2a10; --asb:#9db8e0; --asb-bg:#1c2a44;
+  --good:#5ad198; --good-bg:#12301f; --ok:#ffb347; --ok-bg:#3a2a10; --bad:#ff6b7f; --bad-bg:#3a1520;
+  --free:#5ad198; --route:#6ea3ff; --scene:#8794ab;
+  --land:#172238; --block:#1e2b45; --road:#3a4a68; --casing:#0c1424; --sea:#0b2c4a; --beach:#4b442c; --park:#1c3a2b; --rail:#55627a; --maptext:#8f9cb3;
+  --shadow:0 6px 24px rgba(0,0,0,.5); color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.4 var(--body);
+  padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  min-height:600px;display:flex;flex-direction:column}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.app{flex:1;min-height:0;position:relative;display:grid;gap:10px;
+  grid-template-columns:minmax(0,1fr) 372px;grid-template-rows:auto minmax(0,1fr) auto;
+  grid-template-areas:"head head" "map calls" "units calls"}
+
+/* header */
+.head{grid-area:head;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;margin-right:auto;min-width:0}
+.brand i{width:34px;height:14px;flex:none;border-radius:2px;
+  background:repeating-linear-gradient(90deg,var(--batt) 0 8.5px,var(--accent) 8.5px 17px)}
+.brand h1{font:700 22px/1 var(--display);letter-spacing:.04em;text-transform:uppercase;margin:0;white-space:nowrap}
+.stat{font:600 13px/1 var(--display);letter-spacing:.06em;text-transform:uppercase;color:var(--mute);white-space:nowrap}
+.stat b{font-size:18px;color:var(--ink);font-variant-numeric:tabular-nums;margin-left:4px}
+.timer{font:700 30px/1 var(--display);font-variant-numeric:tabular-nums;background:var(--ink);color:var(--bg);padding:5px 12px;border-radius:6px;letter-spacing:.04em}
+.timer.low{background:var(--imm);color:#fff}
+
+/* map */
+.mapwrap{grid-area:map;position:relative;min-height:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--land)}
+#map{display:block;width:100%;height:100%}
+.m-land{fill:var(--land)} .m-sea{fill:var(--sea)} .m-beach{fill:var(--beach)} .m-park{fill:var(--park)} .m-block{fill:var(--block)}
+.m-pier{fill:var(--block);stroke:var(--casing);stroke-width:1.5}
+.m-ruin{fill:none;stroke:var(--maptext);stroke-width:1.5;stroke-dasharray:3 3}
+.m-rail{fill:none;stroke:var(--rail);stroke-width:4;stroke-dasharray:10 5}
+.m-cas{stroke:var(--casing);stroke-linecap:round;fill:none}
+.m-road{stroke:var(--road);stroke-linecap:round;fill:none}
+.m-rlabel{font:600 9px var(--display);letter-spacing:.12em;fill:var(--maptext);text-anchor:middle;dominant-baseline:central}
+.m-dist{font:700 17px var(--display);letter-spacing:.22em;fill:var(--maptext);opacity:.55;text-anchor:middle}
+.m-lm{font:600 11.5px var(--body);fill:var(--ink);paint-order:stroke;stroke:var(--land);stroke-width:3px;stroke-linejoin:round}
+.m-sealabel{font:500 italic 15px var(--body);letter-spacing:.3em;fill:var(--maptext);text-anchor:middle;opacity:.8}
+.m-nick{fill:var(--accent)} .m-nicktxt{font:700 10px var(--display);fill:var(--accent-ink);text-anchor:middle;dominant-baseline:central;letter-spacing:.05em}
+.m-dome{fill:var(--surface);stroke:var(--maptext);stroke-width:1.2}
+
+.route{fill:none;stroke:var(--route);stroke-width:3;stroke-dasharray:2 9;stroke-linecap:round;opacity:.6}
+.mark{cursor:pointer}
+.mark circle.pin{stroke:#fff;stroke-width:2.5}
+.mark.gI circle.pin{fill:#c8102e} .mark.gP circle.pin{fill:#d98200} .mark.gA circle.pin{fill:#3d5a80}
+.mark text{font:700 15px var(--display);fill:#fff;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.mark .pulse{fill:none;stroke-width:3;opacity:0}
+.mark.gI .pulse{stroke:#c8102e} .mark.gP .pulse{stroke:#d98200} .mark.gA .pulse{stroke:#3d5a80}
+.mark.waiting .pulse{animation:pulse 1.2s ease-out infinite}
+.mark .sel{fill:none;stroke:var(--ink);stroke-width:3;stroke-dasharray:5 4;opacity:0}
+.mark.selected .sel{opacity:1}
+.mark.closed{opacity:.35}
+@keyframes pulse{0%{r:14px;opacity:.9}100%{r:34px;opacity:0}}
+.car .body{fill:#fff;stroke:#0f1b2d;stroke-width:1.5}
+.car .y{fill:#f5d000} .car .b{fill:#1257c7}
+.car .bar{fill:#7a8598}
+.unit.route .car .bar{animation:blues .35s steps(1) infinite}
+@keyframes blues{0%{fill:#2f7bff}50%{fill:#fff}}
+.ulabel rect{stroke:#0f1b2d;stroke-width:1.2}
+.ulabel text{font:700 13px var(--display);fill:var(--t-ink);text-anchor:middle;dominant-baseline:central;letter-spacing:.03em}
+.unit.scene .ulabel{opacity:.7}
+.tT{fill:var(--t-taser)} .tK{fill:var(--t-dog)} .tR{fill:var(--t-traffic)} .tD{fill:var(--t-double)} .tS{fill:var(--t-single)}
+
+/* result pop-ups */
+.pops{position:absolute;left:10px;top:10px;display:flex;flex-direction:column;gap:8px;width:min(330px,calc(100% - 20px));pointer-events:none;z-index:3}
+.pop{pointer-events:auto;background:var(--surface);border:1px solid var(--line);border-left:6px solid var(--mute);border-radius:8px;padding:9px 12px;box-shadow:var(--shadow);cursor:pointer;animation:popin .25s ease-out}
+.pop.l2{border-left-color:var(--good)} .pop.l1{border-left-color:var(--ok)} .pop.l0{border-left-color:var(--bad)}
+.pop .ph{display:flex;gap:8px;align-items:baseline;justify-content:space-between}
+.pop .pt{font:700 15px/1.15 var(--display);letter-spacing:.03em;text-transform:uppercase}
+.pop .pv{font:700 12px/1 var(--display);letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
+.pop.l2 .pv{color:var(--good)} .pop.l1 .pv{color:var(--ok)} .pop.l0 .pv{color:var(--bad)}
+.pop p{margin:4px 0 0;font-size:13px;line-height:1.35}
+@keyframes popin{from{transform:translateY(-8px);opacity:0}to{transform:none;opacity:1}}
+
+/* unit board */
+.units{grid-area:units;display:grid;grid-template-columns:1.25fr repeat(7,minmax(0,1fr));gap:6px}
+.target{background:var(--ink);color:var(--bg);border-radius:8px;padding:7px 10px;display:flex;flex-direction:column;justify-content:center;min-width:0}
+.target small{font:600 11px/1 var(--display);letter-spacing:.1em;text-transform:uppercase;opacity:.7}
+.target b{font:700 15px/1.15 var(--display);letter-spacing:.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:3px}
+.target.nudge{animation:nudge .4s}
+@keyframes nudge{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.chip{background:var(--surface);border:1px solid var(--line);border-top:5px solid var(--t-single);border-radius:8px;padding:6px 8px;text-align:left;cursor:pointer;min-width:0;display:flex;flex-direction:column;gap:2px}
+.chip.tT{border-top-color:var(--t-taser)} .chip.tK{border-top-color:var(--t-dog)} .chip.tR{border-top-color:var(--t-traffic)} .chip.tD{border-top-color:var(--t-double)}
+.chip .cs{font:700 17px/1 var(--display);letter-spacing:.03em;display:flex;justify-content:space-between;gap:4px}
+.chip .cs kbd{font:600 11px/1 var(--display);color:var(--mute);border:1px solid var(--line);border-radius:3px;padding:2px 4px}
+.chip .ty{font:600 12px/1.1 var(--display);letter-spacing:.07em;text-transform:uppercase;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chip .st{font:600 12px/1.1 var(--body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chip.free .st{color:var(--free)} .chip.route .st{color:var(--route)} .chip.scene .st{color:var(--scene)}
+.chip.free:hover{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 30%,transparent)}
+.chip:not(.free){cursor:not-allowed;background:var(--surface2)}
+.chip:not(.free) .cs,.chip:not(.free) .ty{opacity:.55}
+
+/* call queue */
+.calls{grid-area:calls;min-height:0;display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.calls h2{margin:0;padding:9px 12px;font:700 14px/1 var(--display);letter-spacing:.1em;text-transform:uppercase;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;color:var(--mute)}
+#queue{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:6px;padding:8px}
+.empty{color:var(--mute);padding:14px 6px;font-size:13px}
+.call{order:0;border:1px solid var(--line);border-left:6px solid var(--mute);border-radius:8px;padding:8px 10px;cursor:pointer;background:var(--surface);text-align:left;display:block;width:100%;flex:none}
+.call.gI{border-left-color:var(--imm)} .call.gP{border-left-color:var(--pri)} .call.gA{border-left-color:var(--asb)}
+.call.assigned{order:1;background:var(--surface2)} .call.closed{order:2;background:var(--surface2);opacity:.6}
+.call.selected{outline:2.5px solid var(--ink);outline-offset:-1px}
+.call .r1{display:flex;align-items:center;gap:6px}
+.call .num{font:700 14px/1 var(--display);background:var(--ink);color:var(--bg);border-radius:50%;width:22px;height:22px;display:grid;place-items:center;flex:none}
+.pill{font:700 11px/1 var(--display);letter-spacing:.09em;text-transform:uppercase;padding:4px 6px;border-radius:4px;white-space:nowrap}
+.pill.gI{background:var(--imm-bg);color:var(--imm)} .pill.gP{background:var(--pri-bg);color:var(--pri)} .pill.gA{background:var(--asb-bg);color:var(--asb)}
+.call .ti{font:700 16px/1.1 var(--display);letter-spacing:.02em;min-width:0;flex:1}
+.call .age{font:600 12px/1 var(--display);color:var(--mute);font-variant-numeric:tabular-nums;white-space:nowrap}
+.call .loc{font-weight:600;font-size:12.5px;margin-top:4px}
+.call .tx{font-size:13px;line-height:1.35;margin-top:2px;color:var(--ink)}
+.call .stt{font:600 12px/1.2 var(--body);margin-top:5px;color:var(--mute)}
+.call.waiting .stt{color:var(--imm)}
+.call.assigned .tx,.call.closed .tx{display:none}
+
+/* overlays */
+.overlay{position:absolute;inset:0;z-index:5;display:grid;place-items:center;background:color-mix(in srgb,var(--bg) 78%,transparent);padding:8px}
+.sheet{background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);width:min(680px,100%);max-height:100%;overflow-y:auto;padding:22px 24px}
+.sheet h2{font:700 30px/1 var(--display);letter-spacing:.03em;text-transform:uppercase;margin:0 0 6px;text-wrap:balance}
+.sheet p{margin:8px 0;max-width:62ch}
+.sheet ul{margin:8px 0;padding-left:18px} .sheet li{margin:4px 0}
+.legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:6px;margin:12px 0}
+.legend div{border:1px solid var(--line);border-left:6px solid;border-radius:6px;padding:6px 9px;font-size:13px}
+.legend b{font:700 15px/1 var(--display);letter-spacing:.04em;text-transform:uppercase;display:block}
+.go{background:var(--batt);color:var(--batt-ink);border:0;border-radius:8px;padding:12px 22px;font:700 19px/1 var(--display);letter-spacing:.08em;text-transform:uppercase;cursor:pointer;margin-top:10px}
+.go:hover{filter:brightness(1.06)}
+.scores{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0}
+.scores div{background:var(--surface2);border-radius:8px;padding:10px 12px}
+.scores small{font:600 12px/1 var(--display);letter-spacing:.09em;text-transform:uppercase;color:var(--mute);display:block}
+.scores b{font:700 34px/1.1 var(--display);font-variant-numeric:tabular-nums}
+.scores .main{background:var(--ink);color:var(--bg)} .scores .main small{color:inherit;opacity:.7}
+.deb{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.drow{border:1px solid var(--line);border-left:6px solid var(--mute);border-radius:8px;padding:8px 10px;font-size:13px}
+.drow.gI{border-left-color:var(--imm)} .drow.gP{border-left-color:var(--pri)} .drow.gA{border-left-color:var(--asb)}
+.drow .dh{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.drow .dh b{font:700 15px/1.1 var(--display);letter-spacing:.02em;flex:1;min-width:140px}
+.drow .pts{font:700 13px/1 var(--display);font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--mute)}
+.drow .pts em{font-style:normal;color:var(--ink);font-size:15px}
+.drow p{margin:4px 0 0;max-width:none}
+.drow .warn{color:var(--bad);font-weight:600}
+.drow .lab{color:var(--mute);font-weight:600}
+
+@media (max-width:860px){
+  .app{grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto auto minmax(0,1fr);grid-template-areas:"head" "map" "units" "calls";gap:8px}
+  .mapwrap{aspect-ratio:10/7;max-width:100%;max-height:44vh}
+  .units{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
+  .chip{padding:5px 6px} .chip .cs{font-size:15px} .chip .cs kbd{display:none} .chip .ty,.chip .st{font-size:11px}
+  .target{padding:5px 7px} .target b{font-size:13px}
+  .brand h1{font-size:19px} .timer{font-size:24px;padding:4px 9px} .stat{font-size:11px} .stat b{font-size:15px}
+  .head{gap:8px 12px}
+  .m-rlabel{display:none} .m-dist{font-size:24px} .m-lm{font-size:19px;stroke-width:4px}
+  .ulabel text{font-size:21px} .mark text{font-size:20px}
+  .pops{left:6px;top:auto;bottom:6px;gap:5px;width:calc(100% - 12px)} .pop:not(:last-child){display:none} .pop{padding:6px 9px} .pop p{font-size:12px} .pop .pt{font-size:13px}
+  .sheet{padding:16px} .sheet h2{font-size:25px} .scores b{font-size:26px}
+}
+@media (prefers-reduced-motion:reduce){.mark.waiting .pulse,.unit.route .car .bar,.pop,.target.nudge{animation:none}.mark.waiting .pulse{opacity:.6}}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <header class="head">
+    <div class="brand"><i aria-hidden="true"></i><h1>Brighton Despatch</h1></div>
+    <span class="stat">Waiting<b id="sWait">0</b></span>
+    <span class="stat">Units free<b id="sFree">7</b></span>
+    <span class="stat">Best<b id="sBest">–</b></span>
+    <span class="timer" id="timer" role="timer" aria-label="Time remaining">2:00</span>
+  </header>
+
+  <div class="mapwrap">
+    <svg id="map" viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Map of Brighton town centre showing incidents and police units"></svg>
+    <div class="pops" id="pops" aria-live="polite"></div>
+  </div>
+
+  <div class="units" id="units">
+    <div class="target" id="target"><small>Despatch to</small><b id="targetTxt">Select a call</b></div>
+  </div>
+
+  <section class="calls" aria-label="Incoming calls">
+    <h2><span>Incoming calls</span><span id="qCount"></span></h2>
+    <div id="queue"><div class="empty" id="qEmpty">No calls yet. Start the shift and they will come in here.</div></div>
+  </section>
+
+  <div class="overlay" id="brief">
+    <div class="sheet">
+      <h2>Two minutes on the radio</h2>
+      <p>You are the despatcher for Brighton city centre. Eighteen calls will come in and you have seven units. You cannot cover everything, so read each call, judge the risk and send the right resource.</p>
+      <ul>
+        <li><b>Pick a call</b> in the queue or on the map, then <b>pick a unit</b> (or press 1 to 7). Send a second unit as backup the same way.</li>
+        <li>The grade comes from the call taker. Read the text anyway: a few calls are graded wrongly, and the wording tells you which unit is needed.</li>
+        <li>Units stay committed at scene, so low-risk jobs can wait. Never leave an emergency waiting to service a nuisance call.</li>
+      </ul>
+      <div class="legend">
+        <div style="border-left-color:var(--t-taser)"><b>TZ31 Taser</b>Double crewed, Taser trained. Weapons and violent people.</div>
+        <div style="border-left-color:var(--t-dog)"><b>PD51 Dog unit</b>Handler and police dog. Tracking, searching, disorder.</div>
+        <div style="border-left-color:var(--t-traffic)"><b>RP41 Traffic car</b>Roads policing crew. Collisions, pursuits, road closures.</div>
+        <div style="border-left-color:var(--t-double)"><b>CB11, CB12 Double</b>Two response officers. Confrontation and arrests.</div>
+        <div style="border-left-color:var(--t-single)"><b>CB21, CB22 Single</b>One officer. Low-risk reports, ASB and enquiries.</div>
+      </div>
+      <p>You are scored on <b>risk assessment</b> (how quickly the real emergencies were resourced, and in what order) and <b>allocation</b> (whether the unit matched the job).</p>
+      <button class="go" id="startBtn" type="button">Start shift</button>
+    </div>
+  </div>
+
+  <div class="overlay" id="debrief" hidden>
+    <div class="sheet">
+      <h2 id="dTitle">Shift debrief</h2>
+      <p id="dVerdict"></p>
+      <div class="scores">
+        <div class="main"><small>Overall</small><b id="dAll">0%</b></div>
+        <div><small>Risk assessment</small><b id="dRisk">0%</b></div>
+        <div><small>Allocation</small><b id="dAlloc">0%</b></div>
+      </div>
+      <button class="go" id="againBtn" type="button">Play again with new calls</button>
+      <div class="deb" id="dList"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+var $=function(s){return document.querySelector(s)};
+var NS='http://www.w3.org/2000/svg';
+var GAME=120;
+
+/* ---------- map data: a simplified Brighton town centre ---------- */
+var N={
+ s1:[40,592],s2:[215,592],s3:[395,596],s4:[480,600],s5:[575,604],s6:[760,596],s7:[965,580],
+ w1:[40,405],w2:[215,402],w3:[330,404],ct:[395,398],n2:[490,425],os:[572,470],
+ qr:[398,300],st:[392,190],t1:[505,205],sp:[615,215],nl:[505,305],gp:[612,315],pv:[600,400],
+ lr:[605,110],pc:[590,30],lv:[700,135],lw:[770,30],hn:[820,170],qp:[825,330],e2:[810,440],
+ js:[690,432],rk1:[760,438],e3:[965,455],sj:[700,520],rk2:[760,524],kt:[850,528],k2:[965,525],ah:[700,310],
+ sd:[290,165],dy:[235,30],mp:[220,280],ne:[450,85],ln:[490,515]
+};
+/* [from, to, major?, label] */
+var E=[
+ ['s1','s2',1],['s2','s3',1,'KINGS ROAD'],['s3','s4',1],['s4','s5',1],['s5','s6',1,'MADEIRA DRIVE'],['s6','s7',1,'MARINE PARADE'],
+ ['w1','w2',1,'WESTERN ROAD'],['w2','w3',1],['w3','ct',1],['ct','n2',1,'NORTH STREET'],['n2','os',1],
+ ['os','s5',1,'OLD STEINE'],['os','pv',1],['pv','gp',1],['gp','sp',1,'GRAND PARADE'],['sp','lr',1,'LONDON ROAD'],['lr','pc',1],
+ ['sp','lv',1],['lv','lw',1,'LEWES ROAD'],['lv','hn',0,'ELM GROVE'],['hn','qp',0,'QUEENS PARK ROAD'],['qp','e2',0],
+ ['pv','js',1],['js','rk1',1,'EDWARD STREET'],['rk1','e2',1],['e2','e3',1,'EASTERN ROAD'],
+ ['os','sj',0,"ST JAMES'S STREET"],['sj','rk2',0],['rk2','kt',0],['kt','k2',0,"ST GEORGE'S ROAD"],['k2','e3',0],['k2','s7',0],
+ ['rk1','rk2',0],['rk2','s6',0],
+ ['js','ah',0,'JOHN STREET'],['ah','lv',0],['gp','ah',0],['ah','qp',0,'ALBION HILL'],
+ ['ct','qr',1,'QUEENS ROAD'],['qr','st',1],['qr','nl',0,'NORTH ROAD'],['nl','gp',0],
+ ['st','t1',0,'TRAFALGAR ST'],['t1','sp',0],['nl','t1',0,'SYDNEY ST'],['nl','n2',0],
+ ['ct','s3',1,'WEST STREET'],['n2','ln',0,'SHIP ST'],['ln','s4',0],['ln','os',0],
+ ['w2','s2',0,'PRESTON STREET'],['w1','s1',0],['w2','mp',0,'MONTPELIER RD'],['mp','sd',0],
+ ['ct','sd',1,'DYKE ROAD'],['sd','dy',1],['sd','st',0],['sd','ne',0,'NEW ENGLAND RD'],['ne','pc',0]
+];
+var ADJ={};
+E.forEach(function(e){
+  var d=dist(N[e[0]],N[e[1]]);
+  (ADJ[e[0]]=ADJ[e[0]]||[]).push([e[1],d]);
+  (ADJ[e[1]]=ADJ[e[1]]||[]).push([e[0],d]);
+});
+/* incident locations: [name, x, y, nearest node, tags] */
+var LOCS=[
+ ['West Street',396,510,'s3','pub street'],['Churchill Square',350,402,'w3','shop street'],
+ ['Western Road',130,404,'w2','shop road'],['Brighton Station',392,186,'st','street shop'],
+ ['Queens Road',395,250,'qr','road street shop'],['Sydney Street, North Laine',505,255,'nl','shop street pub'],
+ ['Jubilee Street',498,360,'nl','street pub shop'],['The Lanes',490,470,'ln','shop pub street'],
+ ['Palace Pier entrance',582,612,'s5','seafront street'],['Kings Road Arches',300,594,'s3','seafront pub road'],
+ ['i360, seafront',222,600,'s2','seafront park'],['Madeira Drive',680,600,'s6','seafront road'],
+ ["St James's Street",640,497,'sj','shop pub street road'],["St George's Road, Kemptown",905,527,'kt','shop res road'],
+ ['Old Steine',573,540,'os','road park street'],['Pavilion Gardens',588,430,'pv','park street'],
+ ['The Level',657,175,'lv','park road'],['London Road',610,160,'lr','shop street road'],
+ ['Preston Circus',590,34,'pc','road shop'],['Lewes Road',735,82,'lw','road res shop'],
+ ['Elm Grove, Hanover',760,152,'hn','res pub road'],['Queens Park Road',823,270,'qp','park res road'],
+ ['Edward Street',735,436,'rk1','road res'],['Eastern Road',900,449,'e3','road res'],
+ ['Seven Dials',290,165,'sd','road res shop'],['Dyke Road',342,281,'sd','res road'],
+ ['Montpelier Road',219,330,'mp','res road'],['Preston Street',215,500,'w2','pub street'],
+ ['Brunswick Square',40,510,'s1','res park'],['Marine Parade',870,588,'s7','road seafront res'],
+ ['Trafalgar Street',450,198,'t1','pub street shop'],['Grand Parade',613,270,'gp','road res'],
+ ['New England Road',370,125,'ne','road res'],['North Street',445,412,'n2','shop road street'],
+ ['Albion Hill',697,350,'ah','res'],['Upper Rock Gardens',760,480,'rk2','res road']
+].map(function(l){return {name:l[0],x:l[1],y:l[2],node:l[3],tags:l[4].split(' ')}});
+
+/* ---------- units ---------- */
+var TYPES={T:{name:'Taser',crew:2},K:{name:'Dog unit',crew:1},R:{name:'Traffic',crew:2},D:{name:'Double',crew:2},S:{name:'Single',crew:1}};
+var FLEET=[['TZ31','T'],['PD51','K'],['RP41','R'],['CB11','D'],['CB12','D'],['CB21','S'],['CB22','S']];
+
+/* ---------- call templates ---------- */
+function f(T,D,S,R,K){return {T:T,D:D,S:S,R:R,K:K}}
+var LOW_WHY='Low risk with no threat: one single-crewed officer is enough. Keep double crews and specialists free for emergencies.';
+var GEN_OK='Dealt with, but the unit was more than this job needed.';
+var GEN_BAD='Dealt with, but a specialist unit was off the board for a routine job.';
+var TPL=[
+/* --- Immediate --- */
+{g:'I',title:'Man with a knife',tags:['street','pub','seafront','park'],text:'Male waving a kitchen knife at passers-by. Shouting, appears drunk. Members of the public are running away.',fit:f(3,1,0,1,2),off:2,
+ good:'Male challenged at Taser point and dropped the knife. Arrested, weapon recovered, nobody hurt.',
+ ok:'Handler and dog kept the male contained until more officers arrived. Arrested after a tense stand-off.',
+ bad:'No Taser on scene, so officers had to hold back and call for support. Male made off still carrying the knife.',
+ why:'Weapon seen and the public at risk. A Taser-trained double crew is the safe option; a lone officer should never be sent.'},
+{g:'I',title:'Fight in progress',tags:['pub'],text:'Eight to ten males fighting outside a bar. Bottles being thrown and one male is on the ground not moving.',fit:f(3,3,0,2,3),off:4,
+ good:'Group split up quickly. Two arrested for affray and the injured male handed to an ambulance crew.',
+ ok:'Officers contained it but were stretched. One arrest; the main offenders left before more units arrived.',
+ bad:'Too few officers to step in safely. An officer was assaulted and the group scattered before support arrived.',
+ why:'Large-scale disorder needs numbers: at least four officers, so two units. A dog is very effective at dispersing a crowd.'},
+{g:'I',title:'Serious collision',tags:['road'],text:'Car has hit a cyclist. Cyclist unconscious in the road, traffic backing up. Ambulance is on the way.',fit:f(2,2,1,3,1),off:2,
+ good:'Road closed and scene protected. First aid given until paramedics took over. Driver breath-tested, evidence secured.',
+ ok:'Crew gave first aid and stopped traffic, but collision investigators had to be called out separately.',
+ bad:'One officer could not give first aid and control traffic together. Evidence was driven over before the road was shut.',
+ why:'Serious injury collision: roads policing officers are trained to close the road, manage the scene and investigate.'},
+{g:'I',title:'Burglary in progress',tags:['shop','res'],text:'Two males have forced the rear door of a closed premises. Caller is watching from a flat opposite; they are inside now.',fit:f(2,2,1,1,3),off:2,
+ good:'Handler put the dog round the back. One suspect found hiding in the yard, the second tracked two streets away. Both arrested.',
+ ok:'Crew detained one suspect at the front. The second went over the back wall and was lost.',
+ bad:'Suspects saw the car pull up and both ran out the back. No arrests and property stolen.',
+ why:'Offenders on the premises and likely to run: a dog unit can search and track. A double crew can cover front and back.'},
+{g:'I',title:'Robbery just now',tags:['street','park','seafront'],text:'Teenager robbed of his phone by two males who threatened to stab him. They ran off two minutes ago. Good descriptions.',fit:f(2,2,1,1,3),off:2,
+ good:'Dog tracked from the scene and found both suspects in an alleyway. Phone recovered, two arrests.',
+ ok:'Area search found one suspect matching the description. Arrested, but the phone was not recovered.',
+ bad:'Officer stayed with the victim and could not search as well. Suspects long gone.',
+ why:'Suspects have just made off on foot: a dog can track them. A double crew can split between the search and the victim.'},
+{g:'I',title:'Suspected drink driver',tags:['road'],text:'Van swerving across both lanes. It has clipped a parked car and carried on. Caller is following at a distance.',fit:f(2,2,1,3,1),off:2,
+ good:'Traffic car got behind the van and stopped it safely. Driver blew over twice the limit and was arrested.',
+ ok:'Crew found the van parked up nearby and arrested the driver. It came close to a pursuit they are not trained for.',
+ bad:'Unit could not catch up and is not pursuit trained. Van lost; later found crashed into railings.',
+ why:'Moving vehicle and a possible pursuit: the traffic car has the driver training and the stopping tactics.'},
+{g:'I',title:'Missing child',tags:['seafront','park'],text:'Six-year-old girl lost 15 minutes ago. Mother frantic. Red coat, last seen walking towards the road.',fit:f(2,3,2,2,3),off:2,
+ good:'Area searched fast and the description circulated. Child found safe by a kiosk and reunited with her mother.',
+ ok:'Search was slower than it could have been. Child found safe after 20 anxious minutes.',
+ bad:'Lone officer had to choose between taking details and searching. A passer-by found the child a long way off.',
+ why:'High-risk missing child: speed and numbers matter. Two officers can search and take details at once; a dog can search too.'},
+{g:'I',title:'Violent shoplifter',tags:['shop'],text:'Security have detained a male for theft. He is punching and biting staff and trying to break free.',fit:f(3,3,1,2,2),off:2,
+ good:'Male restrained and handcuffed quickly. Arrested for theft and assault, statements taken from staff.',
+ ok:'Male arrested after a struggle. Not the ideal unit, but there were enough hands to manage.',
+ bad:'One officer could not control him and was injured. Male broke free and ran.',
+ why:'Violent detainee: it takes two officers to restrain and arrest safely.'},
+{g:'I',title:'Man smashing windows',tags:['shop','street'],text:'Male with a metal bar smashing shop windows and threatening anyone who comes near him.',fit:f(3,1,0,1,2),off:2,
+ good:'Male warned and red-dotted with Taser. He dropped the bar and was arrested.',
+ ok:'Dog handler kept him contained in a doorway until more officers arrived. Arrested.',
+ bad:'Without Taser, officers had to back off. He smashed four more windows before specialist units arrived.',
+ why:'Armed with a weapon and making threats. Taser-trained double crew first; a dog is a workable second choice.'},
+{g:'I',title:'Stolen car on the move',tags:['road'],text:'ANPR hit: stolen grey Audi linked to a burglary last night, heading through the area now. Two people in it.',fit:f(1,1,0,3,2),off:2,
+ good:'Traffic car sighted the Audi and boxed it in at the lights. Two arrested, burglary property in the boot.',
+ ok:'Audi was abandoned as the dog van arrived. Dog tracked one occupant to a garden. One arrest.',
+ bad:'Unit is not authorised to pursue. Audi made off at speed and was lost.',
+ why:'A stolen car is likely to fail to stop: only the traffic car is pursuit trained. A dog helps if they run from it.'},
+{g:'I',title:'Ambulance crew assaulted',tags:['street','pub','res'],text:'Paramedics were treating a drunk male who has punched one of them. He is now kicking the ambulance with the crew locked inside.',fit:f(3,3,1,2,2),off:2,
+ good:'Male restrained and arrested for assaulting an emergency worker. Paramedics checked over, both OK.',
+ ok:'Male arrested after a scuffle. The crew managed, though it is not their usual work.',
+ bad:'One officer could not restrain him. Paramedics stayed trapped until a second unit turned up.',
+ why:'Violent male and colleagues at risk: two officers needed to restrain and arrest.'},
+{g:'I',title:'Thieves breaking into cars',tags:['road','res','seafront'],text:'Three males smashing car windows and grabbing bags from the seats. They are still there now.',fit:f(2,2,1,2,3),off:2,
+ good:'Dog deployed as they ran. One detained by the dog, the other two gave themselves up. Property recovered.',
+ ok:'Crew arrested one at the scene. The other two ran in different directions and got away.',
+ bad:'One officer against three. All of them walked off and only descriptions were obtained.',
+ why:'Three offenders who will run: a dog unit is the best tool, or a double crew to detain at least one.'},
+{g:'I',title:'Dog attacking people',tags:['park','seafront'],text:'Large dog off the lead has bitten a child and is going for other people. The owner cannot control it.',fit:f(2,1,0,1,3),off:1,
+ good:'Handler secured the dog with a catch pole. Owner dealt with; child taken to hospital with minor injuries.',
+ ok:'Taser officers kept the dog back from the public until a handler could attend. No further injuries.',
+ bad:'Officers had no equipment for a dangerous dog. A second person was bitten before it was contained.',
+ why:'Dog handlers have the kit and training for a dangerous dog. Taser officers are the fallback.'},
+/* --- under-graded: really Immediate --- */
+{g:'P',eff:'I',title:'Shoplifter detained',tags:['shop'],text:'Security holding a male for theft. Update from caller: he has pulled out a screwdriver and is threatening the guards.',fit:f(3,1,0,1,2),off:2,
+ good:'Male dropped the screwdriver when Taser was drawn. Arrested for theft and threats with a weapon.',
+ ok:'Handler and dog kept him cornered by the tills until backup arrived. Arrested.',
+ bad:'Officers walked into a weapon threat without Taser and had to back out. Male escaped and a guard was cut.',
+ why:'Graded Priority, but the update mentions a weapon. That makes it an Immediate for a Taser unit.'},
+{g:'P',eff:'I',title:'Confused elderly man',tags:['road'],text:'Elderly man in pyjamas seems lost and confused. Update: he is now walking down the middle of the road between moving cars.',fit:f(2,3,2,3,1),off:1,
+ good:'Traffic stopped and the man walked to safety. Identified from a care home bracelet and taken home.',
+ ok:'Officer got him onto the pavement. Care home traced; he was cold but unharmed.',
+ bad:'It took too long to make the road safe. A car swerved into a bollard; the man was unhurt but badly shaken.',
+ why:'Graded Priority, but he is in live traffic: an immediate threat to life. Send whoever is close, ideally traffic or a double crew.'},
+{g:'A',eff:'I',title:'Youths causing nuisance',tags:['shop','street','park'],text:'Group of teenagers shouting outside the shops. Caller adds that one of them keeps showing off a large knife in his waistband.',fit:f(3,2,0,1,2),off:2,
+ good:'Group stopped and searched. A 16-year-old was found with a hunting knife and arrested.',
+ ok:'The youth with the knife was detained after a short foot chase. Knife recovered.',
+ bad:'A lone officer approached the group. The youth ran and the knife was never found.',
+ why:'Logged as ASB, but a knife has been seen. Treat it as an Immediate: Taser unit, or a double crew at the least.'},
+/* --- over-graded: really routine --- */
+{g:'I',eff:'A',title:'999 call: van blocking bay',tags:['shop','road'],text:'Caller rang 999 demanding police now. A delivery van is parked across his loading bay. The driver is in a cafe. No threats made.',fit:f(0,1,3,2,0),off:1,
+ good:'Officer spoke to the driver and the van was moved. Caller advised about using 999.',
+ ok:'Van moved. Sorted, but a more valuable unit than the job needed.',
+ bad:'A specialist crew was tied up on a parking complaint while emergency calls waited.',
+ why:'Graded Immediate, but there is no threat, harm or risk. It waits behind real emergencies and needs one officer at most.'},
+/* --- Priority --- */
+{g:'P',title:'Shoplifter detained',tags:['shop'],text:'Store detective holding a woman for stealing cosmetics. She is calm and cooperating. CCTV available.',fit:f(1,2,3,1,0),off:1,
+ good:'Dealt with by community resolution. Goods returned and she is banned from the store.',why:LOW_WHY},
+{g:'P',title:'Minor collision',tags:['road'],text:'Two cars have bumped. No injuries, but the drivers are arguing and one lane is blocked.',fit:f(1,2,3,3,0),off:1,
+ good:'Details exchanged, vehicles moved and traffic flowing again. One driver warned about his behaviour.',
+ why:'Damage only and no injuries: a single-crewed officer or the traffic car can deal.'},
+{g:'P',title:'Break-in discovered',tags:['shop','res'],text:'Owner has arrived to find the back door forced and cash missing. It happened overnight and nobody is there now.',fit:f(1,2,3,1,1),off:1,
+ good:'Scene preserved for CSI, CCTV seized and a statement taken.',
+ why:'Offenders are long gone, so there is no threat and nothing for a dog to track. One officer to take the report.'},
+{g:'P',title:'Graffiti in progress',tags:['shop','street','road'],text:'Male spraying tags on a shutter right now. Caller is watching from across the road.',fit:f(1,3,3,1,2),off:1,
+ good:'Male stopped with paint on his hands and cans in his bag. Arrested for criminal damage.',
+ why:'One offender, no violence: a response officer, single or double, is the right level.'},
+{g:'P',title:'Drunk refusing to leave',tags:['pub'],text:'Landlord wants a drunk man removed. He is loud and squaring up to staff but has not hit anyone.',fit:f(2,3,1,1,1),off:2,
+ good:'Two officers walked him out and sent him on his way. No arrest needed.',
+ ok:'Male removed. It worked, though a plain double crew would have been the better fit.',
+ bad:'The officer was squared up to and had to call for backup before the male would leave.',
+ why:'Likely confrontation with a drunk male: send a double crew so it can be dealt with safely.'},
+{g:'P',title:'Bike thief at work',tags:['street','shop','seafront'],text:'Male using bolt cutters on a bike lock. Caller says he is already on his second bike.',fit:f(1,3,3,1,2),off:1,
+ good:'Male caught with bolt cutters and two bikes. Arrested for theft and going equipped.',
+ why:'One offender, crime in progress, no violence: any response officer can deal.'},
+{g:'P',title:'Lorry blocking the road',tags:['road'],text:'Broken-down lorry blocking the bus lane and one traffic lane. Buses queuing and cars mounting the pavement to get past.',fit:f(0,2,2,3,0),off:1,
+ good:'Traffic officers set up a safe diversion and arranged recovery. Road clear in 20 minutes.',
+ ok:'Officers directed traffic by hand until recovery arrived. Slow but safe.',
+ bad:'A specialist unit ended up directing traffic for half an hour.',
+ why:'A road problem with danger to pedestrians: this is traffic car work.'},
+{g:'P',title:'Drug dealing',tags:['park','street'],text:'Two men dealing from a bench. Caller has seen several handovers in the last ten minutes.',fit:f(2,3,1,1,2),off:2,
+ good:'Both men stopped and searched. Wraps and cash seized, one arrested for possession with intent.',
+ ok:'One man detained and searched. The other walked off before he could be stopped.',
+ bad:'One officer could only stop one of them, and both walked off in opposite directions.',
+ why:'Two suspects to stop and search: needs a double crew.'},
+{g:'P',title:'Trying car door handles',tags:['res','road'],text:'Male walking along the parked cars trying every door handle. Hood up, carrying a rucksack.',fit:f(1,3,3,2,2),off:1,
+ good:'Male stopped and searched. Sat nav and loose change found; arrested on suspicion of theft from vehicles.',
+ why:'One suspect, no violence: a response officer, single or double, is the right level.'},
+{g:'P',title:'Aggressive begging',tags:['shop','street'],text:'Man standing over people at a cash machine demanding money. Not violent, but customers feel intimidated.',fit:f(1,2,3,1,0),off:1,
+ good:'Male moved on and referred to the street outreach team. Bank staff reassured.',why:LOW_WHY},
+{g:'P',title:'Fake notes used',tags:['shop'],text:'Shop reports a customer paid with fake twenty pound notes. Suspect left ten minutes ago. CCTV available.',fit:f(0,1,3,0,0),off:1,
+ good:'CCTV and the notes seized. Suspect image circulated to local shops.',why:LOW_WHY},
+{g:'P',title:'Concern for welfare',tags:['park','seafront','street'],text:'Elderly woman has been sitting on a bench for two hours. She seems confused and cold. Caller is staying with her.',fit:f(1,2,3,1,0),off:1,
+ good:'Officer identified her from a bus pass and got her home to her family. Safeguarding referral made.',
+ why:'Vulnerable but safe, with someone staying with her. One officer, promptly.'},
+/* --- ASB --- */
+{g:'A',title:'Youths causing nuisance',tags:['shop','street'],text:'About ten teenagers kicking a ball against shop windows and shouting at customers.',fit:f(1,2,3,1,0),off:1,
+ good:'Officer spoke to the group, took names and moved them on. Shop owner updated.',why:LOW_WHY},
+{g:'A',title:'Loud busker',tags:['street','shop','seafront'],text:'Busker with an amplifier has been playing for three hours. Shop staff say they cannot hear their customers.',fit:f(0,1,3,0,0),off:1,
+ good:'Busker agreed to turn it down and move pitch. Details passed to the council.',why:LOW_WHY},
+{g:'A',title:'Street drinkers',tags:['park','street','seafront'],text:'Group of street drinkers on the benches, shouting and leaving cans everywhere. No offences reported.',fit:f(1,2,3,0,0),off:1,
+ good:'Alcohol seized under the public space order and the group moved on.',why:LOW_WHY},
+{g:'A',title:'E-scooters on the pavement',tags:['street','seafront','shop'],text:'Youths riding e-scooters at speed through pedestrians. Near misses with prams.',fit:f(1,2,3,3,0),off:1,
+ good:'Two riders stopped. Scooters seized as they cannot legally be used on the road.',
+ why:'Low risk. A single-crewed officer or, if free, the traffic car for the vehicle offences.'},
+{g:'A',title:'Eggs thrown at buses',tags:['road'],text:'Youths throwing eggs at passing buses. No damage or injuries reported.',fit:f(1,2,3,2,0),off:1,
+ good:'Group identified and spoken to in front of their parents. Bus company updated.',why:LOW_WHY},
+{g:'A',title:'Fireworks let off',tags:['park','seafront'],text:'Teenagers letting off fireworks. Not aiming at anyone, but residents are alarmed.',fit:f(1,2,3,1,1),off:1,
+ good:'Fireworks seized and the group taken home. Words of advice to parents.',why:LOW_WHY},
+{g:'A',title:'Nuisance mopeds',tags:['park','seafront'],text:'Three mopeds doing wheelies and riding across the grass. One has no number plate.',fit:f(1,2,2,3,0),off:1,
+ good:'Traffic officers stopped two riders. One moped seized for no insurance, warnings issued.',
+ ok:'Riders spoken to and moved on, but without traffic powers used nothing was seized.',
+ why:'Vehicle nuisance: the traffic car is ideal if it is free, otherwise a response officer.'},
+{g:'A',title:'Rough sleeper in doorway',tags:['shop'],text:'Shop owner wants a rough sleeper moved from the doorway so they can open up. No aggression.',fit:f(0,1,3,0,0),off:1,
+ good:'Officer woke him, he moved on and an outreach visit was arranged. Shop opened on time.',why:LOW_WHY},
+{g:'A',title:'Noisy crowd outside bar',tags:['pub'],text:'Crowd drinking outside a bar, spilling into the road and chanting. Good-natured so far.',fit:f(2,3,2,1,1),off:1,
+ good:'Officers spoke to door staff and got the crowd back on the pavement. Licensing informed.',
+ ok:'Crowd moved back onto the pavement after a few words.',
+ why:'Low risk but a crowd with drink: a double crew is the comfortable choice, a single officer is acceptable.'}
+];
+TPL.forEach(function(t){t.eff=t.eff||t.g});
+
+/* ---------- helpers ---------- */
+function dist(a,b){return Math.hypot(a[0]-b[0],a[1]-b[1])}
+function rnd(a,b){return a+Math.random()*(b-a)}
+function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function el(tag,attrs,parent){var e=document.createElementNS(NS,tag);for(var k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e}
+function segDist(p,a,b){var dx=b[0]-a[0],dy=b[1]-a[1],l=dx*dx+dy*dy;if(!l)return dist(p,a);var t=Math.max(0,Math.min(1,((p[0]-a[0])*dx+(p[1]-a[1])*dy)/l));return dist(p,[a[0]+t*dx,a[1]+t*dy])}
+function nearestNode(p){var best=null,bd=1e9;for(var k in N){var d=dist(p,N[k]);if(d<bd){bd=d;best=k}}return best}
+function pathNodes(a,b){
+  if(a===b)return [a];
+  var D={},P={},Q={};for(var k in N){D[k]=1e9;Q[k]=1}D[a]=0;
+  for(;;){var u=null;for(k in Q)if(u===null||D[k]<D[u])u=k;if(u===null||u===b||D[u]===1e9)break;delete Q[u];
+    ADJ[u].forEach(function(e){if(D[u]+e[1]<D[e[0]]){D[e[0]]=D[u]+e[1];P[e[0]]=u}})}
+  var out=[b];while(out[0]!==a&&P[out[0]])out.unshift(P[out[0]]);return out}
+function routePts(from,fromNode,to,toNode){
+  var pts=[from].concat(pathNodes(fromNode,toNode).map(function(k){return N[k]}),[to]);
+  /* drop doubling-back at either end when the point already sits on the next road segment */
+  if(pts.length>=3&&segDist(pts[0],pts[1],pts[2])<7)pts.splice(1,1);
+  var n=pts.length;if(n>=3&&segDist(pts[n-1],pts[n-3],pts[n-2])<7)pts.splice(n-2,1);
+  return pts.filter(function(p,i){return i===0||dist(p,pts[i-1])>0.5})}
+var RANK={I:3,P:2,A:1},GNAME={I:'Immediate',P:'Priority',A:'ASB'};
+
+/* ---------- static map ---------- */
+function buildMap(){
+  var s='';
+  s+='<rect class="m-land" x="0" y="0" width="1000" height="700"/>';
+  s+='<polygon class="m-beach" points="0,603 215,603 395,607 575,615 760,607 1000,590 1000,700 0,700"/>';
+  s+='<polygon class="m-sea" points="0,640 400,646 700,640 1000,624 1000,700 0,700"/>';
+  s+='<rect class="m-park" x="50" y="602" width="155" height="11" rx="3"/>';
+  /* parks */
+  s+='<rect class="m-park" x="62" y="222" width="100" height="78" rx="14"/>';
+  s+='<rect class="m-park" x="58" y="468" width="60" height="110" rx="8"/>';
+  s+='<polygon class="m-park" points="624,132 688,140 628,200"/>';
+  s+='<rect class="m-park" x="840" y="296" width="84" height="100" rx="16"/>';
+  s+='<rect class="m-park" x="522" y="345" width="68" height="86" rx="8"/>';
+  s+='<ellipse class="m-park" cx="590" cy="535" rx="9" ry="38"/>';
+  /* buildings */
+  s+='<rect class="m-block" x="364" y="146" width="58" height="34" rx="4"/>';
+  s+='<rect class="m-block" x="322" y="414" width="60" height="48" rx="4"/>';
+  s+='<rect class="m-block" x="338" y="552" width="46" height="27" rx="3"/>';
+  s+='<rect class="m-block" x="922" y="412" width="56" height="30" rx="3"/>';
+  /* piers */
+  s+='<polygon class="m-pier" points="586,618 600,618 606,672 622,676 622,698 580,698 580,676 590,672"/>';
+  s+='<rect class="m-ruin" x="204" y="655" width="42" height="24"/>';
+  s+='<circle class="m-pier" cx="226" cy="622" r="7"/>';
+  /* railway */
+  s+='<path class="m-rail" d="M392 150 L400 95 L430 0"/><path class="m-rail" d="M400 95 Q500 55 700 0"/>';
+  /* roads */
+  E.forEach(function(e){var a=N[e[0]],b=N[e[1]];s+='<line class="m-cas" x1="'+a[0]+'" y1="'+a[1]+'" x2="'+b[0]+'" y2="'+b[1]+'" stroke-width="'+(e[2]?17:11)+'"/>'});
+  E.forEach(function(e){var a=N[e[0]],b=N[e[1]];s+='<line class="m-road" x1="'+a[0]+'" y1="'+a[1]+'" x2="'+b[0]+'" y2="'+b[1]+'" stroke-width="'+(e[2]?13:8)+'"/>'});
+  E.forEach(function(e){if(!e[3])return;var a=N[e[0]],b=N[e[1]];var ang=Math.atan2(b[1]-a[1],b[0]-a[0])*180/Math.PI;if(ang>90)ang-=180;if(ang<-90)ang+=180;
+    var x=(a[0]+b[0])/2,y=(a[1]+b[1])/2;s+='<text class="m-rlabel" transform="translate('+x+' '+y+') rotate('+ang.toFixed(1)+')">'+esc(e[3])+'</text>'});
+  /* Royal Pavilion domes */
+  s+='<g class="m-dome"><rect x="538" y="392" width="38" height="10"/><path d="M557 376 q-11 10 0 16 q11 -6 0 -16z"/><path d="M543 383 q-6 6 0 9 q6 -3 0 -9z"/><path d="M571 383 q-6 6 0 9 q6 -3 0 -9z"/></g>';
+  /* police station */
+  s+='<rect class="m-nick" x="706" y="400" width="46" height="20" rx="3"/><text class="m-nicktxt" x="729" y="410">POLICE</text>';
+  /* districts and landmarks */
+  [['NORTH LAINE',452,262],['THE LANES',528,492],['KEMPTOWN',880,492],['HANOVER',755,245],['SEVEN DIALS',205,150],['MONTPELIER',120,345],['BRUNSWICK',130,455]]
+    .forEach(function(d){s+='<text class="m-dist" x="'+d[1]+'" y="'+d[2]+'">'+d[0]+'</text>'});
+  [['Brighton Station',428,160],['Churchill Sq',270,440],['Clock Tower',408,384],['Royal Pavilion',510,362],['Palace Pier',628,668],['i360',238,628],['West Pier',252,672],
+   ['The Level',636,128],['Queens Park',848,350],["St Ann's Well",72,264],['Brighton Centre',248,570],['County Hospital',880,404],['John Street',758,396]]
+    .forEach(function(d){s+='<text class="m-lm" x="'+d[1]+'" y="'+d[2]+'">'+esc(d[0])+'</text>'});
+  s+='<text class="m-sealabel" x="820" y="680">ENGLISH CHANNEL</text>';
+  s+='<g id="gRoutes"></g><g id="gMarks"></g><g id="gCars"></g>';
+  $('#map').innerHTML=s;
+}
+
+/* ---------- game state ---------- */
+var S=null,last=0,best=null;
+try{best=JSON.parse(localStorage.getItem('despatch_best'))}catch(e){}
+function showBest(){$('#sBest').textContent=(typeof best==='number')?best+'%':'–'}
+
+function pickCalls(){
+  var by=function(fn){return shuffle(TPL.filter(fn))};
+  var I=by(function(t){return t.g==='I'&&t.eff==='I'}).slice(0,6);
+  var hid=by(function(t){return t.g!=='I'&&t.eff==='I'}).slice(0,1);
+  var P=by(function(t){return t.g==='P'&&t.eff==='P'}).slice(0,6);
+  var A=by(function(t){return t.g==='A'&&t.eff==='A'}).slice(0,5);
+  if(Math.random()<0.6){var over=TPL.filter(function(t){return t.g==='I'&&t.eff==='A'})[0];P[5]=over}
+  var all,ok=false,tries=0;
+  while(!ok&&tries++<50){all=shuffle(I.concat(hid,P,A));var f5=all.slice(0,5);
+    var ni=f5.filter(function(t){return t.eff==='I'}).length,na=f5.filter(function(t){return t.eff==='A'}).length;ok=ni>=2&&ni<=3&&na>=1}
+  var used={},times=[0.4,1.6,3,4.5,6];for(var i=5;i<all.length;i++)times.push(10+(i-5)*(88/(all.length-5))+rnd(-1.5,1.5));
+  return all.map(function(t,i){
+    var opts=shuffle(LOCS.filter(function(l){return !used[l.name]&&l.tags.some(function(x){return t.tags.indexOf(x)>=0})}));
+    var loc=opts[0]||shuffle(LOCS.filter(function(l){return !used[l.name]}))[0]||LOCS[i%LOCS.length];used[loc.name]=1;
+    return {n:i+1,tpl:t,g:t.g,eff:t.eff,loc:loc,t0:times[i],spawned:false,units:[],first:null,arrived:false,lock:null,level:null,closeAt:null,closed:false,pen:0,notes:[],card:null,mark:null};
+  });
+}
+
+function newGame(){
+  $('#gRoutes').innerHTML='';$('#gMarks').innerHTML='';$('#gCars').innerHTML='';
+  $('#pops').innerHTML='';
+  var q=$('#queue');q.innerHTML='<div class="empty" id="qEmpty">Stand by. Calls are coming in.</div>';
+  var ub=$('#units');Array.prototype.slice.call(ub.querySelectorAll('.chip')).forEach(function(c){c.remove()});
+  var patrol=shuffle(['ct','st','s2','sp','kt','w2','lw','s6','sd','e2','n2']);
+  var units=FLEET.map(function(fz,i){
+    var node=(fz[0]==='TZ31'||fz[0]==='CB22')?'js':patrol.pop();
+    var p=N[node],off=(fz[0]==='CB22')?[14,-12]:[0,0];
+    var u={i:i,cs:fz[0],type:fz[1],crew:TYPES[fz[1]].crew,x:p[0]+off[0],y:p[1]+off[1],node:node,ang:0,state:'free',call:null,pts:null,cum:null,len:0,d:0,speed:0,routeEl:null};
+    var g=el('g',{class:'unit free'},$('#gCars'));
+    u.g=g;
+    u.car=el('g',{class:'car'},g);
+    u.car.innerHTML='<rect class="body" x="-17" y="-8" width="34" height="16" rx="4"/><rect class="y" x="-13" y="-7.2" width="6" height="14.4"/><rect class="b" x="-7" y="-7.2" width="6" height="14.4"/><rect class="y" x="3" y="-7.2" width="6" height="14.4"/><rect class="b" x="9" y="-7.2" width="5" height="14.4"/><rect class="bar" x="-1" y="-9" width="4" height="18" rx="1"/>';
+    u.lab=el('g',{class:'ulabel'},g);
+    u.lab.innerHTML='<rect class="t'+u.type+'" x="-21" y="-30" width="42" height="17" rx="4"/><text x="0" y="-21.5">'+u.cs+'</text>';
+    var b=document.createElement('button');b.type='button';b.className='chip free t'+u.type;b.id='chip'+i;
+    b.innerHTML='<span class="cs">'+u.cs+'<kbd>'+(i+1)+'</kbd></span><span class="ty">'+TYPES[u.type].name+' ×'+u.crew+'</span><span class="st">Available</span>';
+    b.addEventListener('click',function(){despatch(u)});
+    ub.appendChild(b);u.chip=b;
+    return u;
+  });
+  S={t:0,running:false,over:false,calls:pickCalls(),units:units,sel:null,tick:0};
+  units.forEach(drawUnit);
+  setTimer();updateStats();setTarget();
+}
+
+/* ---------- rendering ---------- */
+function drawUnit(u){
+  /* parked beside the incident pin while at scene, so the call number stays readable */
+  var x=u.x,y=u.y,a=u.ang;
+  if(u.state==='scene'&&u.call){x+=26;y+=10+Math.max(0,u.call.units.indexOf(u))*22;a=0}
+  u.car.setAttribute('transform','translate('+x.toFixed(1)+' '+y.toFixed(1)+') rotate('+a.toFixed(1)+')');
+  u.lab.setAttribute('transform','translate('+x.toFixed(1)+' '+y.toFixed(1)+')');
+}
+function unitState(u){
+  drawUnit(u);
+  u.g.setAttribute('class','unit '+u.state);
+  u.chip.className='chip '+u.state+' t'+u.type;
+  u.chip.setAttribute('aria-disabled',u.state!=='free');
+  u.chip.querySelector('.st').textContent=u.state==='free'?'Available':(u.state==='route'?'En route #'+u.call.n:'At scene #'+u.call.n);
+}
+function setTimer(){
+  var r=Math.max(0,Math.ceil(GAME-S.t)),t=$('#timer');
+  t.textContent=Math.floor(r/60)+':'+('0'+r%60).slice(-2);t.classList.toggle('low',r<=15&&S.running);
+}
+function updateStats(){
+  var open=S.calls.filter(function(c){return c.spawned&&!c.closed});
+  $('#sWait').textContent=open.filter(function(c){return !c.units.length}).length;
+  $('#sFree').textContent=S.units.filter(function(u){return u.state==='free'}).length;
+  $('#qCount').textContent=S.calls.filter(function(c){return c.spawned}).length+' of '+S.calls.length;
+}
+function setTarget(){
+  var c=S.sel;$('#targetTxt').textContent=c?('#'+c.n+' '+c.tpl.title):'Select a call';
+}
+function callStatus(c){
+  var st=c.closed?'closed':(c.units.length?'assigned':'waiting');
+  c.card.className='call g'+c.g+' '+st+(S.sel===c?' selected':'');
+  c.mark.setAttribute('class','mark g'+c.g+' '+st+(S.sel===c?' selected':''));
+  var txt;
+  if(c.closed)txt='Closed'+(c.level===null?'':' · '+['Poor result','Adequate result','Good result'][c.level]);
+  else if(!c.units.length)txt='No unit assigned';
+  else txt=c.units.map(function(u){return u.cs+(u.state==='scene'?' at scene':' en route')}).join(' · ');
+  c.card.querySelector('.stt').textContent=txt;
+}
+function ages(){
+  S.calls.forEach(function(c){if(!c.spawned||c.closed)return;var a=c.card.querySelector('.age');
+    a.textContent=c.units.length?'':Math.floor(S.t-c.t0)+'s waiting'});
+}
+function select(c){
+  var old=S.sel;S.sel=c;if(old&&old.card)callStatus(old);if(c)callStatus(c);setTarget();
+}
+function spawn(c){
+  c.spawned=true;var e=$('#qEmpty');if(e)e.remove();
+  var b=document.createElement('button');b.type='button';
+  b.innerHTML='<span class="r1"><span class="num">'+c.n+'</span><span class="pill g'+c.g+'">'+GNAME[c.g]+'</span><span class="ti">'+esc(c.tpl.title)+'</span><span class="age"></span></span>'+
+    '<div class="loc">'+esc(c.loc.name)+'</div><div class="tx">'+esc(c.tpl.text)+'</div><div class="stt"></div>';
+  b.addEventListener('click',function(){select(c)});
+  var q=$('#queue');q.insertBefore(b,q.firstChild);c.card=b;
+  var g=el('g',{transform:'translate('+c.loc.x+' '+c.loc.y+')'},$('#gMarks'));
+  g.innerHTML='<circle class="pulse" r="14"/><circle class="sel" r="21"/><circle class="pin" r="14"/><text>'+c.n+'</text>';
+  g.addEventListener('click',function(){select(c)});c.mark=g;
+  callStatus(c);
+  if(!S.sel)select(c);
+  updateStats();
+}
+function popup(level,title,verdict,text){
+  var p=document.createElement('div');p.className='pop'+(level===null?'':' l'+level);
+  p.innerHTML='<div class="ph"><span class="pt">'+esc(title)+'</span><span class="pv">'+esc(verdict)+'</span></div><p>'+esc(text)+'</p>';
+  var box=$('#pops');box.appendChild(p);
+  while(box.children.length>3)box.firstChild.remove();
+  p.addEventListener('click',function(){p.remove()});
+  setTimeout(function(){p.remove()},8000);
+}
+
+/* ---------- despatch logic ---------- */
+function despatch(u){
+  if(!S.running)return;
+  var c=S.sel;
+  if(!c||c.closed){var t=$('#target');t.classList.remove('nudge');void t.offsetWidth;t.classList.add('nudge');return}
+  if(u.state!=='free'||c.units.indexOf(u)>=0)return;
+  /* risk ordering: was a higher-risk call left with nobody while this unit could have taken it? */
+  var worse=null;
+  S.calls.forEach(function(x){
+    if(x===c||!x.spawned||x.closed||x.units.length||S.t-x.t0<3)return;
+    if(RANK[x.eff]>RANK[c.eff]&&x.tpl.fit[u.type]>=2&&(!worse||RANK[x.eff]>RANK[worse.eff]))worse=x});
+  if(worse&&!c.arrived){var pen=worse.eff==='I'?35:15;if(pen>c.pen)c.pen=pen;
+    c.notes.push(u.cs+' was sent here while #'+worse.n+' ('+worse.tpl.title+') had nobody assigned.')}
+  if(c.first===null)c.first=S.t;
+  c.units.push(u);u.call=c;u.state='route';
+  u.pts=routePts([u.x,u.y],u.node,[c.loc.x,c.loc.y],c.loc.node);
+  u.cum=[0];for(var i=1;i<u.pts.length;i++)u.cum.push(u.cum[i-1]+dist(u.pts[i-1],u.pts[i]));
+  u.len=u.cum[u.cum.length-1];u.d=0;
+  u.speed=(c.g==='I'?64:46)*(u.type==='R'?1.2:1);
+  u.routeEl=el('polyline',{class:'route',points:u.pts.map(function(p){return p[0]+','+p[1]}).join(' ')},$('#gRoutes'));
+  unitState(u);callStatus(c);ages();updateStats();
+}
+function assess(c){
+  var us=c.lock||c.units,bestFit=-1,officers=0;
+  us.forEach(function(u){bestFit=Math.max(bestFit,c.tpl.fit[u.type]);officers+=u.crew});
+  var short=officers<c.tpl.off;
+  var level=bestFit>=3?2:(bestFit===2?1:0);if(short&&level>0)level--;
+  return {fit:bestFit,officers:officers,short:short,level:level,n:us.length};
+}
+function arrive(u){
+  var c=u.call;u.state='scene';u.x=c.loc.x;u.y=c.loc.y;u.node=c.loc.node;
+  if(u.routeEl){u.routeEl.remove();u.routeEl=null}
+  if(!c.arrived){
+    c.arrived=true;c.lock=c.units.slice();
+    var a=assess(c);c.level=a.level;
+    var base={I:30,P:22,A:14}[c.eff]+rnd(-3,3);
+    c.closeAt=S.t+base*[1.5,1.2,1][a.level];
+    var t=c.tpl,txt=a.level===2?t.good:(a.level===1?(t.ok||GEN_OK):(t.bad||GEN_BAD));
+    popup(a.level,u.cs+' at #'+c.n+' '+t.title,['Poor result','Adequate','Good result'][a.level],txt);
+  }else{
+    popup(null,u.cs+' at #'+c.n+' '+c.tpl.title,'Backup','Backup unit at scene and assisting.');
+  }
+  unitState(u);callStatus(c);
+}
+function closeCall(c){
+  c.closed=true;
+  c.units.forEach(function(u){
+    if(u.call!==c)return;
+    if(u.state==='route'){u.node=nearestNode([u.x,u.y]);if(u.routeEl){u.routeEl.remove();u.routeEl=null}}
+    u.state='free';u.call=null;unitState(u)});
+  callStatus(c);c.card.querySelector('.age').textContent='';
+  if(S.sel===c)select(null);
+  updateStats();
+}
+function step(dt){
+  S.calls.forEach(function(c){if(!c.spawned&&S.t>=c.t0)spawn(c)});
+  S.units.forEach(function(u){
+    if(u.state!=='route')return;
+    u.d+=u.speed*dt;
+    if(u.d>=u.len){arrive(u);drawUnit(u);return}
+    var i=1;while(u.cum[i]<u.d)i++;
+    var a=u.pts[i-1],b=u.pts[i],k=(u.d-u.cum[i-1])/(u.cum[i]-u.cum[i-1]);
+    u.x=a[0]+(b[0]-a[0])*k;u.y=a[1]+(b[1]-a[1])*k;u.ang=Math.atan2(b[1]-a[1],b[0]-a[0])*180/Math.PI;
+    drawUnit(u);
+  });
+  S.calls.forEach(function(c){if(c.arrived&&!c.closed&&S.t>=c.closeAt)closeCall(c)});
+  setTimer();
+  S.tick+=dt;if(S.tick>0.25){S.tick=0;ages();updateStats()}
+  if(S.t>=GAME)endGame();
+}
+function frame(now){
+  var dt=Math.min(0.1,(now-last)/1000);last=now;
+  if(S&&S.running){S.t+=dt;step(dt)}
+  requestAnimationFrame(frame);
+}
+
+/* ---------- scoring ---------- */
+function timeliness(eff,delay){
+  if(eff==='I')return delay<=10?100:Math.max(0,100-(delay-10)*4);
+  if(eff==='P')return delay<=25?100:Math.max(0,100-(delay-25)*2);
+  return 100;
+}
+function bestLabel(t){
+  var names=[];['T','K','R','D','S'].forEach(function(k){if(t.fit[k]===3)names.push(TYPES[k].name)});
+  var s=names.join(' or ');if(t.off>=4)s+=', with a second unit as backup';return s;
+}
+function scoreCall(c){
+  var t=c.tpl,r={risk:0,alloc:0,skip:false,notes:c.notes.slice(),sent:c.units.map(function(u){return u.cs}).join(', ')||'No unit sent'};
+  if(!c.units.length){
+    var waited=GAME-c.t0;
+    if(c.eff==='A'){r.skip=true;r.notes.push(c.g==='I'?'Correctly held back: no threat, harm or risk despite the grade.':'Held while units were busy with higher-risk calls. Acceptable.')}
+    else if((c.eff==='P'&&waited<30)||(c.eff==='I'&&waited<10)){r.skip=true;r.notes.push('Came in too late in the shift to count.')}
+    else r.notes.push(c.eff==='I'?'An emergency was left with no unit for '+Math.round(waited)+' seconds.':'Left with no unit for '+Math.round(waited)+' seconds.');
+    return r;
+  }
+  var delay=c.first-c.t0;
+  r.risk=Math.max(0,Math.round(timeliness(c.eff,delay)-c.pen));
+  if(c.eff==='I'&&delay>10)r.notes.push('Took '+Math.round(delay)+' seconds to resource. Aim to despatch an emergency within 10.');
+  if(c.eff==='P'&&delay>25)r.notes.push('Took '+Math.round(delay)+' seconds to resource.');
+  var a=assess(c);
+  var al=[0,30,70,100][Math.max(0,a.fit)];
+  if(a.short){al*=0.6;r.notes.push('Not enough officers: this needed '+t.off+', you sent '+a.officers+'.')}
+  var need=t.off>=4?2:1,cap=c.eff==='I'?Math.max(need,2):need;
+  if(a.n>cap){al-=15*(a.n-cap);r.notes.push('Over-resourced: '+a.n+' units committed to this.')}
+  if(a.fit===0)r.notes.push(t.fit.S===3?'A specialist was wasted on a routine job.':'Unsafe or unsuitable unit for this call.');
+  r.alloc=Math.max(0,Math.round(al));
+  return r;
+}
+function endGame(){
+  S.running=false;S.over=true;setTimer();$('#timer').classList.remove('low');
+  var W={I:3,P:2,A:1},sr=0,sa=0,sw=0,html='';
+  S.calls.filter(function(c){return c.spawned}).forEach(function(c){
+    var r=scoreCall(c),w=W[c.eff];
+    if(!r.skip){sr+=r.risk*w;sa+=r.alloc*w;sw+=w}
+    var mis=c.g!==c.eff?'<span class="pill g'+c.eff+'">Really '+GNAME[c.eff]+'</span>':'';
+    html+='<div class="drow g'+c.g+'"><div class="dh"><span class="pill g'+c.g+'">'+GNAME[c.g]+'</span>'+mis+'<b>#'+c.n+' '+esc(c.tpl.title)+', '+esc(c.loc.name)+'</b>'+
+      '<span class="pts">'+(r.skip?'Not scored':'Risk <em>'+r.risk+'</em> · Allocation <em>'+r.alloc+'</em>')+'</span></div>'+
+      '<p><span class="lab">You sent:</span> '+esc(r.sent)+' &nbsp; <span class="lab">Best choice:</span> '+esc(bestLabel(c.tpl))+'</p>'+
+      '<p>'+esc(c.tpl.why)+'</p>'+
+      (r.notes.length?'<p class="'+(r.skip?'lab':'warn')+'">'+r.notes.map(esc).join(' ')+'</p>':'')+'</div>';
+  });
+  var risk=sw?Math.round(sr/sw):0,alloc=sw?Math.round(sa/sw):0,all=Math.round((risk+alloc)/2);
+  $('#dRisk').textContent=risk+'%';$('#dAlloc').textContent=alloc+'%';$('#dAll').textContent=all+'%';
+  $('#dVerdict').textContent=all>=85?'Outstanding. You read the risk in each call and matched the resource to it.':
+    all>=70?'A solid shift. Most emergencies got the right unit quickly; check the notes below for the ones that slipped.':
+    all>=50?'Mixed. Some good calls, but emergencies waited or went to the wrong unit. The notes below show where.':
+    'A hard shift. Focus on the Immediates first and read the call text for the clue to which unit it needs.';
+  $('#dList').innerHTML=html;
+  if(typeof best!=='number'||all>best){best=all;try{localStorage.setItem('despatch_best',JSON.stringify(best))}catch(e){}}
+  showBest();
+  $('#debrief').hidden=false;$('#debrief').querySelector('.sheet').scrollTop=0;
+}
+
+/* ---------- boot ---------- */
+buildMap();newGame();showBest();
+$('#startBtn').addEventListener('click',function(){$('#brief').hidden=true;S.running=true});
+$('#againBtn').addEventListener('click',function(){$('#debrief').hidden=true;newGame();S.running=true});
+document.addEventListener('keydown',function(e){
+  if(!S||!S.running||e.ctrlKey||e.metaKey||e.altKey)return;
+  var n=parseInt(e.key,10);if(n>=1&&n<=S.units.length){despatch(S.units[n-1]);e.preventDefault()}
+});
+window.__despatch={state:function(){return S},end:endGame};
+last=performance.now();requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
